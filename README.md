@@ -15,6 +15,7 @@ The Asset Monitoring System is a specialized tool designed to track revenue and 
       - [Step 2. Install project dependencies of frontend and backend](#step-2-install-project-dependencies-of-frontend-and-backend)
       - [Step 3. Add a .env file and put these lines of code in it.](#step-3-add-a-env-file-and-put-these-lines-of-code-in-it)
       - [Step 4. Setup virtual host environment to access development mode](#step-4-setup-virtual-host-environment-to-access-development-mode)
+      - [Step 5. Run the development server.](#step-5-run-the-development-server)
 
 ---
 
@@ -126,7 +127,7 @@ DB_PASSWORD=''
 ```
 
 #### Step 4. Setup virtual host environment to access development mode
-- **Step 4.1. Add .htaccess file inside the public_html folder and put these lines of code in it.**
+  4.1. Add .htaccess file inside the public_html folder and put these lines of code in it.
   
   ```bash
     <IfModule mod_rewrite.c>
@@ -143,7 +144,7 @@ DB_PASSWORD=''
       # RewriteRule ^(.*)$ index.php/$1 [L]
     </IfModule>   
   ```
-- **Step 4.2. Open `httpd-vhost.conf` file located at `C:\xampp\apache\conf\extra\httpd-vhosts.conf` and put these lines of code at the bottom.**
+  4.2. Open `httpd-vhost.conf` file located at `C:\xampp\apache\conf\extra\httpd-vhosts.conf` and put these lines of code at the bottom.
 
   ```bash
     <VirtualHost *:80>
@@ -168,13 +169,14 @@ DB_PASSWORD=''
         </Directory>
     </VirtualHost>
   ```
-- **Step 4.3. Open `hosts` file as an administrator located at `C:\Windows\System32\drivers\etc\hosts` and put this line of code in it.**
+  4.3. Open `hosts` file as an administrator located at `C:\Windows\System32\drivers\etc\hosts` and put this line of code in it.
   ```bash
     127.0.0.1 rbxams.local
   ```
   *NOTE: if you're running the Apache server from XAMPP, you must restart the XAMPP (apache) server.*
 
-- #### Step 5. Run the development server.
+#### Step 5. Run the development server.
+  
   5.1. Open XAMPP application and start Apache and MySQL server.
     
     You can now access `http://rbxams.local/`
@@ -193,5 +195,5 @@ DB_PASSWORD=''
       npm run dev
     ``` 
     You must access `http://rbxams.local/`
-    
+
 ---

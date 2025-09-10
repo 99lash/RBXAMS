@@ -306,8 +306,8 @@
       outline-offset: 2px;
     }
   }
-  .bg-indigo-500 {
-    background-color: var(--color-indigo-500);
+  .bg-red-500 {
+    background-color: var(--color-red-500);
   }
   .bg-red-600 {
     background-color: var(--color-red-600);

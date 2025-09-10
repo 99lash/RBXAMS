@@ -34,8 +34,6 @@ The Asset Monitoring System is a specialized tool designed to track revenue and 
 
 ### Team Members
 
---- 
-
 <table>
   <tbody>
     <tr>
@@ -179,14 +177,14 @@ DB_PASSWORD=''
   
   5.1. Open XAMPP application and start Apache and MySQL server.
     
-  You can now access `http://rbxams.local/`
+  You can now access `http://rbxams.local/`.
 
   5.2. If you are a *Frontend Developer*, execute this command in your terminal.
     
   ```bash
     npm run dev:bs
   ```
-  You must access `http://localhost:3000/`
+  You must access `http://localhost:3000/`.
 
   if the above script doesn't work as you followed all the steps accordingly. Then, alternatively run this instead.
 
@@ -194,6 +192,6 @@ DB_PASSWORD=''
   ```bash
     npm run dev
   ``` 
-  You must access `http://rbxams.local/`
+  You must access `http://rbxams.local/`.
 
 ---

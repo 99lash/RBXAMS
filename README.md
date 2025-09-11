@@ -13,7 +13,7 @@ The Asset Monitoring System is a specialized tool designed to track revenue and 
       - [Prerequisites Tools](#prerequisites-tools)
       - [Step 1. Clone this repository inside of `c:\xampp\htdocs`](#step-1-clone-this-repository-inside-of-cxampphtdocs)
       - [Step 2. Install project dependencies of frontend and backend](#step-2-install-project-dependencies-of-frontend-and-backend)
-      - [Step 3. Add a .env file and put these lines of code in it.](#step-3-add-a-env-file-and-put-these-lines-of-code-in-it)
+      - [Step 3. Create a `.env` file and put the content of `.env.example` into `.env`.](#step-3-create-a-env-file-and-put-the-content-of-envexample-into-env)
       - [Step 4. Setup virtual host environment to access development mode](#step-4-setup-virtual-host-environment-to-access-development-mode)
       - [Step 5. Run the development server.](#step-5-run-the-development-server)
 
@@ -21,13 +21,13 @@ The Asset Monitoring System is a specialized tool designed to track revenue and 
 
 ### Tech Stack
 
-- Languages
+- **Languages**
   - Native PHP 8.4
   - HTML
   - JavaScript
-- Frameworks
+- **Frameworks**
   - TailwindCSS v4 
-- Database
+- **Database**
   - MySQL
 
 ---
@@ -111,18 +111,7 @@ A step by step guide that will tell you how to get the development environment u
   npm install
 ```
 
-#### Step 3. Add a .env file and put these lines of code in it.
-
-```bash
-# TESTING
-MEOW="hello from dot env file"
-
-# DATABASE CONNECTIOn
-DB_HOST=127.0.0.1
-DB_NAME=rbxams_db
-DB_USERNAME=root
-DB_PASSWORD=''
-```
+#### Step 3. Create a `.env` file and put the content of `.env.example` into `.env`.
 
 #### Step 4. Setup virtual host environment to access development mode
   4.1. Add .htaccess file inside the public_html folder and put these lines of code in it.

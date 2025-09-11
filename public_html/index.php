@@ -1,8 +1,8 @@
 <?php
 
 require __DIR__ . '/../vendor/autoload.php';
-require_once __DIR__ . '/../src/config/LoadDotenv.php';
-// require '../src/Views/Partials/Header.php';
+require_once __DIR__ . '/../src/Config/LoadDotenv.php';
+require_once __DIR__ . '/../src/Config/db.php';
 
 /**
  * @routers 

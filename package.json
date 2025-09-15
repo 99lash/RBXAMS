@@ -8,18 +8,18 @@
     "dev": "node src/watch.js",
     "build:css": "npx @tailwindcss/cli -i public_html/css/app.css -o public_html/css/styles.css --minify",
     "watch:css": "npx @tailwindcss/cli -i public_html/css/app.css -o public_html/css/styles.css --watch",
-    "sync": "browser-sync start --proxy http://rbxams.local --files './public_html/css/*.css, ./src/Views/**/*.php, ./src/Views/Pages/*.php, ./src/Views/Partials/*.php' --no-notify --reload-debounce 1000",
+    "sync": "browser-sync start --proxy http://rbxams.local --files \"public_html/css/*.css, src/Views/**/*.php, src/Views/Pages/*.php, src/Views/Partials/*.php\" --no-notify --reload-debounce 1000",
     "dev:bs": "concurrently \"npm run watch:css\" \"npm run sync\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@tailwindcss/cli": "^4.1.13",
     "daisyui": "^5.1.7",
     "tailwindcss": "^4.1.13"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.1.13",
     "browser-sync": "^3.0.4",
     "concurrently": "^9.2.1"
   }

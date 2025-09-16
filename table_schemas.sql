@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `username` VARCHAR(255),
   `email` VARCHAR(255) NOT NULL,
   `password` VARCHAR(255) NOT NULL,
+  `profile_pic_url` VARCHAR(255),
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (`user_role_id`) REFERENCES `user_roles` (`id`)
@@ -29,6 +30,7 @@ CREATE TABLE IF NOT EXISTS `accounts` (
   `account_type` VARCHAR(20) COMMENT 'pending | fastflip',
   `account_status_id` INT,
   `name` VARCHAR(255),
+  `cookie_enc` TEXT NOT NULL COMMENT 'encrypted .ROBLOSECURITY cookie',
   `robux` DECIMAL(12,2),
   `cost_php` DECIMAL(12,2),
   `price_php` DECIMAL(12,2),

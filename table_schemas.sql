@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS `user_roles` (
 CREATE TABLE IF NOT EXISTS `users` (
   `id` CHAR(36) PRIMARY KEY,
   `user_role_id` INT,
-  `username` VARCHAR(255),
+  `name` VARCHAR(255),
   `email` VARCHAR(255) NOT NULL,
   `password` VARCHAR(255) NOT NULL,
   `profile_pic_url` VARCHAR(255),

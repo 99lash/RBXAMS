@@ -83,5 +83,6 @@ class Router
     $title = 'Page not found | RBXAMS';
     $page = '404';
     require __DIR__ . '/../Views/index.php';
+    // TODO: separate 404 page para sa mga authenticated and non-authenticated users.
   }
 }

@@ -3,6 +3,8 @@
 namespace App\Controllers;
 
 use App\Services\UserService;
+use App\Services\AuthService;
+
 class UserController
 {
   private UserService $service;
@@ -30,7 +32,8 @@ class UserController
   }
 
 
-  public function create() {
+  public function create()
+  {
     $name = $_POST['name'] ?? '';
     $email = $_POST['email'] ?? '';
     $password = $_POST['password'];
@@ -40,7 +43,7 @@ class UserController
     $response = $this->service->createUser($name, $email, $password, $profilePicUrl);
     echo json_encode([
       "success" => $response
-    ]);    
+    ]);
   }
 
 

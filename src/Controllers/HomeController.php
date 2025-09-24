@@ -2,20 +2,24 @@
 
 namespace App\Controllers;
 
-// use App\Models\User;
+use App\Security\AuthManager;
 
-class HomeController {
-  public function __construct() {
-    $this->page = 'home';
-    $this->title = 'Dashboard | RBXAMS';
+class HomeController
+{
+  private AuthManager $authManager;
+  private array $currentUser;
+  public function __construct()
+  {
+    $this->authManager = new AuthManager();
+    $this->currentUser = $this->authManager->requireAuth();
   }
 
-  public function index() {
+  public function index()
+  {
+    // var_dump($this->currentUser);
+    // var_dump($_SESSION['user']);
     $page = '/';
-    $age = 'Dashboard | RBXAMS';
-    // $user = new User('ash', 21);
-    // $name= $user->getName();
-    // $age = $user->getAge();
+    $title = 'Dashboard | RBXAMS';
     require __DIR__ . '/../Views/index.php';
   }
 }

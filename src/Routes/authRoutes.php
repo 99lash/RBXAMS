@@ -17,8 +17,8 @@ $authRouter->get('/login', 'AuthController@loginGet');
 $authRouter->post('/login', 'AuthController@loginPost');
 
 /** 
- *  @method GET
+ *  @method POST
  *  @route  /logout
  *  @desc   Request a logout action 
 */
-$authRouter->post('/logout', 'AuthController@logout');
+$authRouter->post('/logout', 'AuthController@logoutPost');

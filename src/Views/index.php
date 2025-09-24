@@ -1,3 +1,11 @@
+<?php
+$currentUser = '';
+if (property_exists($this, 'currentUser')) {
+  // echo 'Hello';
+  $currentUser = $this->currentUser;
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -11,21 +19,20 @@
 
 <body>
 
-  <div class="app">
+  <div class="min-h-screen flex w-full" id="app">
     <!-- Sidebar -->
     <?php
     require_once 'Partials/Sidebar.php';
     ?>
-    <div class="main-container">
+    <div class="flex-1" id="main-container">
       <!-- Header -->
       <?php
       require_once 'Partials/Header.php';
       ?>
       <!-- Main -->
-      <main>
+      <main class="min-h-screen">
         <?php
         if (isset($page)) {
-          
           switch ($page) {
             case '/':
               require 'Pages/Home.php';
@@ -47,10 +54,13 @@
               require 'Pages/Login.php';
               break;
 
-            case '/register':
-              require 'Pages/Register.php';
+            case '/guide':
+              require 'Pages/Guide.php';
               break;
-            
+
+            // case '/register':
+            //   require 'Pages/Register.php';
+            //   break;
             default:
               var_dump($page);
               require 'Pages/404.php';
@@ -68,6 +78,7 @@
       ?>
     </div>
   </div>
+  <script src="https://unpkg.com/lucide@latest"></script>
   <script src="/scripts/index.js"></script>
 </body>
 

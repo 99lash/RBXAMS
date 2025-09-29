@@ -32,6 +32,18 @@ class UserModel extends HeroModel implements \JsonSerializable
     return get_object_vars($this);
   }
 
+  public static function fromArray(array $data): UserModel
+  {
+    return new UserModel(
+      $data['id'] ?? null,
+      $data['user_role_id'] ?? null,
+      $data['name'] ?? null,
+      $data['email'] ?? null,
+      $data['password'] ?? null,
+      $data['profile_pic_url'] ?? '',
+    );
+  }
+
   /** 
    * @desc getter methods  
    */

@@ -7,7 +7,7 @@ if (property_exists($this, 'currentUser')) {
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="hidden">
 
 <head>
   <meta charset="UTF-8">
@@ -17,9 +17,31 @@ if (property_exists($this, 'currentUser')) {
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
 </head>
 
+<script>
+  (function () {
+    const savedTheme = localStorage.getItem('theme');
+    let theme = savedTheme;
+
+    if (!theme || theme === 'system') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      theme = prefersDark ? 'dark' : 'light';
+    }
+    document.documentElement.setAttribute('data-theme', theme);
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const sidebar = document.getElementById('sidebar');
+      if (localStorage.getItem('sidebar') === 'collapsed') {
+        sidebar.classList.remove('w-64');
+        sidebar.classList.add('w-16', 'collapsed');
+      }
+      document.documentElement.classList.remove('hidden');
+    });
+  })();
+</script>
+
 <body>
 
-  <div class="min-h-screen flex w-full" id="app">
+  <div class="min-h-[90vh] flex transition-all duration-300" id="app">
     <!-- Sidebar -->
     <?php
     require_once 'Partials/Sidebar.php';
@@ -30,7 +52,7 @@ if (property_exists($this, 'currentUser')) {
       require_once 'Partials/Header.php';
       ?>
       <!-- Main -->
-      <main class="min-h-screen">
+      <main class="min-h-[90vh]">
         <?php
         if (isset($page)) {
           switch ($page) {
@@ -42,10 +64,10 @@ if (property_exists($this, 'currentUser')) {
               require 'Pages/ManageAccount.php';
               break;
 
-            case '/accounts/new':
-              require 'Pages/newAccount.php';
-              break;
-
+            // case '/accounts/new':
+            //   require 'Pages/newAccount.php';
+            //   break;
+        
             case '/summary':
               require 'Pages/DailySummary.php';
               break;
@@ -74,7 +96,7 @@ if (property_exists($this, 'currentUser')) {
 
       <!-- Footer -->
       <?php
-      require_once 'Partials/Footer.php';
+      //  require_once 'Partials/Footer.php';
       ?>
     </div>
   </div>

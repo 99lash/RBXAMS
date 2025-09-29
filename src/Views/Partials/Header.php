@@ -1,25 +1,46 @@
 <?php if ($page != '/login'): ?>
-  <header class="z-30 bg-base-100 border-b border-base-300 flex justify-between items-center px-6 py-3">
-    <!-- Left: Page Title -->
+  <header
+    class="border-b border-base-300 flex justify-between items-center px-4 py-3 sticky top-0">
+    <!-- Left: Sidebar toggle and breadcrumbs -->
     <div class="flex items-center gap-2">
-      <h1 class="font-semibold text-lg">
-        <?php echo isset($title) ? $title : 'Dashboard'; ?>
-      </h1>
+      <button id="toggle-sidebar" class="btn btn-sm btn-ghost">
+        <i data-lucide="panel-right" class="w-4 h-4"></i>
+      </button>
+      <nav class="breadcrumbs">
+        <ul class="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-400">
+          <li>
+            <a class="link">RBXAMS</a>
+          </li>
+          <?php if (isset($nav) && isset($page)): ?>
+            <li>
+              <a class="link" href="<?= $page ?>">
+                <?= $nav ?>
+              </a>
+            </li>
+          <?php endif; ?>
+        </ul>
+      </nav>
     </div>
 
     <!-- Right: Actions -->
     <div class="flex items-center gap-4">
-      <!-- Install App button -->
-      <button class="btn btn-sm btn-outline flex items-center gap-1">
-        <i data-lucide="download" class="w-4 h-4"></i>
-        Install App
-      </button>
-
       <!-- Theme toggle -->
-      <button class="btn btn-sm btn-ghost"
-        onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'">
-        <i data-lucide="moon" class="w-5 h-5"></i>
-      </button>
+      <div class="dropdown dropdown-end">
+        <label tabindex="0" class="btn btn-sm btn-ghost">
+          <i data-lucide="sun" class="w-4 h-4"></i>
+        </label>
+        <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-200 rounded-box w-40">
+          <li class="theme-option" data-name="light">
+            <a>Light</a>
+          </li>
+          <li class="theme-option" data-name="dark">
+            <a>Dark</a>
+          </li>
+          <li class="theme-option" data-name="system">
+            <a>System</a>
+          </li>
+        </ul>
+      </div>
     </div>
   </header>
 <?php endif; ?>

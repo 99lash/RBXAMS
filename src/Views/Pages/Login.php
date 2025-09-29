@@ -46,7 +46,6 @@ use App\Utils\Flash;
       </div>
       <button type="submit" class="btn btn-primary w-full">Sign In</button>
     </form>
-    <p class="mt-4 text-center text-sm">New to ROBLOX Tracker? <a href="/register" class="link">Create an account</a>
     </p>
   </div>
 </div>

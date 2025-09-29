@@ -19,20 +19,22 @@ class UserRepository
   public function findALl()
   {
     $users = [];
+    $usersData = [];
     $result = $this->mysqli->query("SELECT * FROM users;");
     if ($result) {
-      $allUsersData = $result->fetch_all(MYSQLI_ASSOC);
+      $usersData = $result->fetch_all(MYSQLI_ASSOC);
       $result->free();
     }
-    foreach ($allUsersData as $userData) {
-      $user = new UserModel(
-        $userData['id'],
-        $userData['user_role_id'],
-        $userData['name'],
-        $userData['email'],
-        $userData['password'],
-        $userData['profile_pic_url'] || null
-      );
+    foreach ($usersData as $userData) {
+      // $user = new UserModel(
+      //   $userData['id'],
+      //   $userData['user_role_id'],
+      //   $userData['name'],
+      //   $userData['email'],
+      //   $userData['password'],
+      //   $userData['profile_pic_url'] || null
+      // );
+      $user = UserModel::fromArray($userData);
       $users[] = $user->jsonSerialize();
     }
     return $users;
@@ -47,14 +49,15 @@ class UserRepository
 
     if ($row) {
       // var_dump($row);
-      $user = new UserModel(
-        $row['id'],
-        $row['user_role_id'],
-        $row['name'],
-        $row['email'],
-        $row['password'],
-        $row['profile_pic_url'] || null
-      );
+      // $user = new UserModel(
+      //   $row['id'],
+      //   $row['user_role_id'],
+      //   $row['name'],
+      //   $row['email'],
+      //   $row['password'],
+      //   $row['profile_pic_url'] || null
+      // );
+      $user = UserModel::fromArray($row);
       $createdAt = new DateTimeImmutable($row['created_at']);
       $updatedAt = new DateTimeImmutable($row['updated_at']);
       $user->setCreatedAt($createdAt)->setUpdatedAt($updatedAt);
@@ -74,16 +77,17 @@ class UserRepository
 
     $stmt->bind_param("s", $nameOrEmail);
     $stmt->execute();
-    $result = $stmt->get_result();
-    if ($row = $result->fetch_assoc()) {
-      return new UserModel(
-        $row['id'],
-        $row['user_role_id'],
-        $row['name'],
-        $row['email'],
-        $row['password'],
-        $row['profile_pic_url'] || null
-      );
+    $row = $stmt->get_result()->fetch_assoc();
+    if ($row) {
+      return UserModel::fromArray($row);
+      // return new UserModel(
+      //   $row['id'],
+      //   $row['user_role_id'],
+      //   $row['name'],
+      //   $row['email'],
+      //   $row['password'],
+      //   $row['profile_pic_url'] || null
+      // );
     }
     return null;
   }

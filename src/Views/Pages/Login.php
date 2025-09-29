@@ -3,14 +3,14 @@ use App\Utils\Flash;
 // var_dump(Flash::has('error'));
 ?>
 
-<div class="flex w-full items-center justify-center bg-base-100 dark:bg-base-200 min-h-screen">
+<div class="flex w-full items-center justify-center min-h-screen bg-base-100 dark:bg-base-200">
   <!-- Theme toggle -->
   <div class="absolute top-5 right-5">
     <div class="dropdown dropdown-end">
       <label tabindex="0" class="btn btn-sm btn-ghost">
-        <i data-lucide="sun" class="w-5 h-5"></i>
+        <i data-lucide="sun" class="w-4 h-4"></i>
       </label>
-      <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-200 rounded-box w-40">
+      <ul tabindex="0" class="menu menu-sm dropdown-content mt-2 z-[1] p-2 shadow bg-base-300 rounded-box w-40">
         <li class="theme-option" data-name="light">
           <a">Light</a>
         </li>

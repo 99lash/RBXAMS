@@ -18,6 +18,7 @@ class SummaryController
   {
     $page = '/summary';
     $title = 'Daily Summary | RBXAMS';
+    $nav = 'Daily Summary';
     require __DIR__ . '/../Views/index.php';
   }
 }

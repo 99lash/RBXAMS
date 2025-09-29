@@ -18,6 +18,7 @@ class GuideController
   {
     $page = '/guide';
     $title = 'Guide | RBXAMS';
+    $nav = 'Guide';
     require __DIR__ . '/../Views/index.php';
   }
 }

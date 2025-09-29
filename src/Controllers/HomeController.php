@@ -20,6 +20,7 @@ class HomeController
     // var_dump($_SESSION['user']);
     $page = '/';
     $title = 'Dashboard | RBXAMS';
+    $nav = 'Dashboard';
     require __DIR__ . '/../Views/index.php';
   }
 }

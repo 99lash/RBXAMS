@@ -25,8 +25,8 @@ CREATE TABLE IF NOT EXISTS `account_status` (
 );
 
 CREATE TABLE IF NOT EXISTS `accounts` (
-  `id` CHAR(36) PRIMARY KEY,
-  `user_id` CHAR(36),
+  `id` BIGINT PRIMARY KEY,
+  `user_id` CHAR(36) NOT NULL,
   `account_type` VARCHAR(20) COMMENT 'pending | fastflip',
   `account_status_id` INT,
   `name` VARCHAR(255),
@@ -36,17 +36,18 @@ CREATE TABLE IF NOT EXISTS `accounts` (
   `price_php` DECIMAL(12,2),
   `profit_php` DECIMAL(12,2),
   `sold_rate_usd` DECIMAL(12,2),
-  `sold_date` TIMESTAMP,
-  `is_deleted` BOOLEAN,
+  `unpend_date` TIMESTAMP NULL DEFAULT NULL,
+  `sold_date` TIMESTAMP NULL DEFAULT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `deleted_at` TIMESTAMP NULL DEFAULT NULL,
   FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   FOREIGN KEY (`account_status_id`) REFERENCES `account_status` (`id`)
 );
 
 CREATE TABLE IF NOT EXISTS `daily_transactions` (
   `id` CHAR(36) PRIMARY KEY,
-  `account_id` CHAR(36),
+  `account_id` BIGINT,
   `account_type` VARCHAR(20) COMMENT 'pending | fastflip',
   `action` VARCHAR(20) COMMENT 'buy | sell',
   `robux_amount` DECIMAL(12,2),

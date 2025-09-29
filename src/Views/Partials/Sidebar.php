@@ -39,28 +39,45 @@
     <img src="/assets/coins.jpeg" alt="Coins" class="rounded-xl shadow-md">
   </div>
 <?php else: ?>
-  <!-- Default sidebar (kung hindi login page) -->
+  <!-- Default sidebar -->
   <aside
-    class="sidebar bg-base-200 w-64 h-screen flex flex-col justify-between fixed left-0 top-0 border-r border-base-300">
+    class="sidebar bg-base-100 dark:bg-base-200 w-64 min-h-screen flex flex-col justify-between border-r border-base-300 transition-all duration-300 overflow-hidden"
+    id="sidebar">
+
     <div>
       <!-- Branding -->
       <div class="p-4 flex items-center gap-2">
         <i data-lucide="line-chart" class="w-6 h-6 text-primary"></i>
-        <span class="font-bold text-lg">RBXAMS</span>
+        <span class="font-bold text-lg sidebar-text">RBXAMS</span>
       </div>
 
       <!-- Navigation -->
-      <nav class="mt-4">
-        <ul class="menu p-2">
-          <li><a href="/" class="flex items-center gap-2"><i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-              Dashboard</a></li>
-          <li><a href="/accounts" class="flex items-center gap-2"><i data-lucide="users" class="w-5 h-5"></i> Manage
-              Accounts</a></li>
-          <li><a href="/accounts/new" class="flex items-center gap-2"><i data-lucide="plus-circle" class="w-5 h-5"></i>
-              Add Account</a></li>
-          <li><a href="/summary" class="flex items-center gap-2"><i data-lucide="bar-chart-3" class="w-5 h-5"></i> Daily
-              Summary</a></li>
-          <li><a href="/guide" class="flex items-center gap-2"><i data-lucide="book-open" class="w-5 h-5"></i> Guide</a>
+      <nav class="mt-4 flex flex-col align-center justify-between">
+        <div class="text-xs font-bold ps-5 sidebar-text">Navigation</div>
+        <ul class="menu p-2 min-w-full">
+          <li>
+            <a href="/" class="flex items-center gap-2">
+              <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+              <span class="sidebar-text">Dashboard</span>
+            </a>
+          </li>
+          <li>
+            <a href="/accounts" class="flex items-center gap-2">
+              <i data-lucide="users" class="w-4 h-4"></i>
+              <span class="sidebar-text">Accounts</span>
+            </a>
+          </li>
+          <li>
+            <a href="/summary" class="flex items-center gap-2">
+              <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+              <span class="sidebar-text">Daily Summary</span>
+            </a>
+          </li>
+          <li>
+            <a href="/guide" class="flex items-center gap-2">
+              <i data-lucide="book-open" class="w-4 h-4"></i>
+              <span class="sidebar-text">Guide</span>
+            </a>
           </li>
         </ul>
       </nav>
@@ -73,12 +90,12 @@
           <span>AS</span>
         </div>
       </div>
-      <div>
+      <div class="sidebar-text">
         <p class="font-medium"><?= $currentUser['name'] ?? '' ?></p>
         <p class="text-sm text-gray-500 dark:text-gray-400"><?= $currentUser['email'] ?? '' ?></p>
       </div>
       <form method="post" action="/logout">
-        <button type="submit" class="btn">Logout</button>
+        <button type="submit" class="btn btn-primary btn-sm sidebar-text">Logout</button>
       </form>
     </div>
   </aside>

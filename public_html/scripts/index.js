@@ -29,3 +29,26 @@ function themeSwitcher(e) {
   }
   localStorage.setItem('theme', theme);
 }
+
+/* Sidebar minimize & maximize functionality */
+document.addEventListener('DOMContentLoaded', () => {
+  const sidebar = document.getElementById('sidebar');
+  const toggleSidebarButton = document.getElementById('toggle-sidebar');
+
+  // Load state from localStorage
+  if (localStorage.getItem('sidebar') === 'collapsed') {
+    sidebar.classList.remove('w-64');
+    sidebar.classList.add('w-16', 'collapsed');
+  }
+
+  if (toggleSidebarButton) {
+    toggleSidebarButton.addEventListener('click', () => {
+      const isCollapsed = sidebar.classList.toggle('collapsed');
+      sidebar.classList.toggle('w-64', !isCollapsed);
+      sidebar.classList.toggle('w-16', isCollapsed);
+
+      // Save state
+      localStorage.setItem('sidebar', isCollapsed ? 'collapsed' : 'expanded');
+    });
+  }
+});

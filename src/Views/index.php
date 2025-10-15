@@ -15,6 +15,8 @@ if (property_exists($this, 'currentUser')) {
   <title><?php echo isset($title) ? $title : 'RBXAMS' ?> </title>
   <link rel="stylesheet" href="/css/styles.css">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <link href="https://unpkg.com/tabulator-tables@5.5.0/dist/css/tabulator.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js"></script>
 </head>
 
 <script>

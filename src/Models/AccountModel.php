@@ -5,9 +5,9 @@ namespace App\Models;
 use DateTimeImmutable;
 use App\Utils\AccountType;
 
-class AccountModel extends HeroModel implements \JsonSerializable
+class AccountModel extends HeroModel
 {
-  private int $id;
+  private ?int $id;
   private ?string $user_id;
   private ?string $account_type;
   private ?int $account_status_id;
@@ -16,11 +16,15 @@ class AccountModel extends HeroModel implements \JsonSerializable
   private ?float $robux;
   private ?float $cost_php;
   private ?float $price_php;
-  private ?float $profit_php;
+  // ++ ADDED: Stores the exchange rate at the time of sale for historical accuracy.
+  private ?float $usd_to_php_rate_on_sale;
   private ?float $sold_rate_usd;
   private ?DateTimeImmutable $unpend_date;
   private ?DateTimeImmutable $sold_date;
   private ?DateTimeImmutable $deleted_at;
+
+  // ++ ADDED: This public property will hold the calculated profit.
+  public ?float $profit_php;
 
   public function __construct(
     int $id = null,
@@ -32,11 +36,14 @@ class AccountModel extends HeroModel implements \JsonSerializable
     float $robux = null,
     float $cost_php = null,
     float $price_php = null,
-    float $profit_php = null,
+    // ++ ADDED: New property for the constructor.
+    float $usd_to_php_rate_on_sale = null,
     float $sold_rate_usd = null,
     DateTimeImmutable $unpend_date = null,
     DateTimeImmutable $sold_date = null,
-    DateTimeImmutable $deleted_at = null,
+    DateTimeImmutable $created_at = null,
+    DateTimeImmutable $updated_at = null,
+    DateTimeImmutable $deleted_at = null
   ) {
     $this->id = $id;
     $this->user_id = $user_id;
@@ -47,15 +54,27 @@ class AccountModel extends HeroModel implements \JsonSerializable
     $this->robux = $robux;
     $this->cost_php = $cost_php;
     $this->price_php = $price_php;
-    $this->profit_php = $profit_php;
+    // ++ ADDED: Assign the new property.
+    $this->usd_to_php_rate_on_sale = $usd_to_php_rate_on_sale;
     $this->sold_rate_usd = $sold_rate_usd;
     $this->unpend_date = $unpend_date;
     $this->sold_date = $sold_date;
     $this->deleted_at = $deleted_at;
+
+    // ++ ADDED: Automatically calculate profit whenever an Account object is created.
+    // This ensures profit is always up-to-date without storing it in the DB.
+    $this->profit_php = ($this->price_php ?? 0) - $this->cost_php;
+
+    // ++ ADDED: construct the hero model;
+    parent::__construct($created_at, $updated_at);
   }
 
-  // ---- JSON Serialization ----
-  public function jsonSerialize()
+
+  /**
+   * Returns the model properties as an array.
+   * @return array
+   */
+  public function toArray(): array
   {
     return [
       'id' => $this->id,
@@ -67,20 +86,23 @@ class AccountModel extends HeroModel implements \JsonSerializable
       'robux' => $this->robux,
       'cost_php' => $this->cost_php,
       'price_php' => $this->price_php,
-      'profit_php' => $this->profit_php,
+      // ++ ADDED: New property in array conversion.
+      'usd_to_php_rate_on_sale' => $this->usd_to_php_rate_on_sale,
+      // -- REMOVED: 'profit_php' is no longer a direct property from the DB.
       'sold_rate_usd' => $this->sold_rate_usd,
-      'unpend_date' => $this->unpend_date?->format('Y-m-d H:i:s'),
-      'sold_date' => $this->sold_date?->format('Y-m-d H:i:s'),
-      'deleted_at' => $this->deleted_at?->format('Y-m-d H:i:s')
-      // 'created_at' => $this->getCreatedAt()?->format('Y-m-d H:i:s'),
-      // 'updated_at' => $this->getUpdatedAt()?->format('Y-m-d H:i:s'),
+      // ++ ADDED: Include the calculated profit in the array output.
+      'profit_php' => $this->profit_php,
+      'unpend_date' => $this->unpend_date,
+      'sold_date' => $this->sold_date,
+      // 'created_at' => $this->created_at,
+      // 'updated_at' => $this->updated_at,
+      'deleted_at' => $this->deleted_at
     ];
   }
-
-  public function toArray()
-  {
-    return get_object_vars($this);
-  }
+  // public function toArray()
+  // {
+  //   return get_object_vars($this);
+  // }
 
   public static function fromArray(array $row): AccountModel
   {
@@ -94,10 +116,12 @@ class AccountModel extends HeroModel implements \JsonSerializable
       $row['robux'] ?? null,
       $row['cost_php'] ?? null,
       $row['price_php'] ?? null,
-      $row['profit_php'] ?? null,
+      $row['usd_to_php_rate_on_sale'] ?? null,
       $row['sold_rate_usd'] ?? null,
       isset($row['unpend_date']) ? new DateTimeImmutable($row['unpend_date']) : null,
       isset($row['sold_date']) ? new DateTimeImmutable($row['sold_date']) : null,
+      isset($row['created_at']) ? new DateTimeImmutable($row['created_at']) : null,
+      isset($row['updated_at']) ? new DateTimeImmutable($row['updated_at']) : null,
       isset($row['deleted_at']) ? new DateTimeImmutable($row['deleted_at']) : null,
     );
   }
@@ -139,6 +163,12 @@ class AccountModel extends HeroModel implements \JsonSerializable
   {
     return $this->price_php;
   }
+
+  public function getUsdToPhpRateOnSale(): ?float
+  {
+    return $this->usd_to_php_rate_on_sale;
+  }
+
   public function getProfitPhp(): ?float
   {
     return $this->profit_php;
@@ -206,6 +236,13 @@ class AccountModel extends HeroModel implements \JsonSerializable
     $this->price_php = $price_php;
     return $this;
   }
+
+  public function setUsdToPhpRateOnSale(float $usd_to_php_rate_on_sale): self
+  {
+    $this->usd_to_php_rate_on_sale = $usd_to_php_rate_on_sale;
+    return $this;
+  }
+
   public function setProfitPhp(float $profit_php): self
   {
     $this->profit_php = $profit_php;

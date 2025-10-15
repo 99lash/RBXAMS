@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS `daily_transactions` (
 
 CREATE TABLE IF NOT EXISTS `daily_summary` (
   `id` CHAR(36) PRIMARY KEY,
-  `account_type` VARCHAR(20) COMMENT 'pending | fastflip',
+  -- `account_type` VARCHAR(20) COMMENT 'pending | fastflip',
   `total_robux_invested` DECIMAL(12,2),
   `total_robux_sold` DECIMAL(12,2),
   `total_cost_php` DECIMAL(12,2),

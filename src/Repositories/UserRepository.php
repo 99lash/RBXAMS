@@ -35,7 +35,7 @@ class UserRepository
       //   $userData['profile_pic_url'] || null
       // );
       $user = UserModel::fromArray($userData);
-      $users[] = $user->jsonSerialize();
+      $users[] = $user->toArray();
     }
     return $users;
   }
@@ -91,7 +91,7 @@ class UserRepository
     }
     return null;
   }
-  public function create($id, $userRoleId, $name, $email, $hashed_password, $profilePicUrl) {
+  public function create($id, $userRoleId=1, $name, $email, $hashed_password, $profilePicUrl) {
     $query = "
       INSERT INTO
         users 
@@ -115,7 +115,7 @@ class UserRepository
 
     // get_object_vars can see private props only inside the same class,
     // but here we call from Repository, so use jsonSerialize
-    $data = $user->jsonSerialize();
+    $data = $user->toArray();
 
     foreach ($data as $column => $value) {
       if ($column === "id") {
@@ -153,5 +153,12 @@ class UserRepository
     $stmt = $this->mysqli->prepare('DELETE FROM users WHERE id = ?');
     $stmt->bind_param('s', $id);
     return $stmt->execute();
+  }
+  
+  public function getUserRoleIdByName($name) {
+    $stmt = $this->mysqli->prepare('SELECT id FROM user_roles WHERE name = ?');
+    $stmt->bind_param('s', $name);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_assoc();
   }
 }

@@ -22,10 +22,12 @@ class AccountController
   {
     // $currentUser = $this->authManager->requireAuth();
     $page = '/accounts';
-    $title = 'Manage Accounts | RBXAMS';
+    $title = 'Accounts | RBXAMS';
+    $nav = 'Accounts';
     header('Content-Type: application/json');
     $accounts = $this->accountService->getAllAccounts();
     echo json_encode($accounts);
+    
     // TODO: implement the accounts page.
     // require __DIR__ . '/../Views/index.php';
   }

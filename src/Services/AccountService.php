@@ -3,31 +3,37 @@
 namespace App\Services;
 
 use App\Repositories\AccountRepository;
+use App\Repositories\TransactionRepository;
 use App\Services\RobloxAPI\RobloxService;
+use App\Transformers\AccountTransformer;
 use App\Utils\AccountType;
 use App\Models\AccountModel;
 
 class AccountService
 {
-  private AccountRepository $repo;
+  private AccountRepository $accountRepo;
+  private TransactionRepository $transactionRepo;
   private RobloxService $robloxService;
 
   public function __construct()
   {
-    $this->repo = new AccountRepository();
+    $this->accountRepo = new AccountRepository();
     $this->robloxService = new RobloxService();
+    $this->transactionRepo = new TransactionRepository();
   }
 
-  public function getAllAccounts(): array
+  public function getAllAccounts()
   {
-    return $this->repo->findALl();
+    $results = $this->accountRepo->findALl();
+    // return AccountTransformer::transform($results);
+    return AccountTransformer::transformCollection($results);
   }
 
   public function create(array $data): bool
   {
     // Encrypt the cookie securely
     $status = $data['account_type'] == AccountType::PENDING ? 'pending' : 'unpend';
-    $statusId = $this->repo->findAccountStatusId($status);
+    $statusId = $this->accountRepo->findAccountStatusId($status);
     $cookieEnc = base64_encode($data['cookie'] ?? '');
 
     $account = AccountModel::fromArray($data);
@@ -36,26 +42,64 @@ class AccountService
       ->setAccountStatusId($statusId)
       ->setRobux($status == AccountType::PENDING ? $data['pendingRobuxTotal'] : $data['robux']);
     // var_dump($account);
-    return $this->repo->create($account);
+    return $this->accountRepo->create($account);
   }
 
   public function getByCookie($cookie): ?AccountModel
   {
     $cookieEnc = base64_encode($cookie) ?? '';
-    return $this->repo->findByCookie($cookieEnc);
+    return $this->accountRepo->findByCookie($cookieEnc);
   }
 
   public function getById($id)
   {
-    return $this->repo->findById($id);
+    $result = $this->accountRepo->findById(intval($id));
+    return AccountTransformer::transform($result);
   }
 
   public function updateAccountById($id)
   {
     $patchData = json_decode(file_get_contents("php://input"), true);
 
-    $account = new AccountModel($id);
+    if (empty($patchData))
+      return false;
 
+    // --- "Buy" Transaction Logic ---
+    // Check if a cost is being set for the first time.
+    if (isset($patchData['cost_php']) && $patchData['cost_php'] > 0) {
+      if ($currentAccountData = $this->accountRepo->findById($id)) {
+        $currentModel = $currentAccountData['model'];
+
+        if ($currentModel->getCostPhp() === null || $currentModel->getCostPhp() == 0) {
+          $this->transactionRepo->create(
+            $id,
+            'buy',
+            $currentModel->getRobux(),
+            (float) $patchData['cost_php']
+          );
+        }
+      }
+    }
+
+    // --- "Sell" Transaction Logic ---
+    // Check if the account status is being updated to "sold".
+    $SOLD_STATUS_ID = $this->accountRepo->findAccountStatusId('sold');
+    if (isset($patchData['account_status_id']) && $patchData['account_status_id'] === $SOLD_STATUS_ID) {
+      if ($accountData = $this->accountRepo->findById($id)) {
+        $accountModel = $accountData['model'];
+        $price_php = $patchData['price_php'] ?? $accountModel->getPricePhp();
+        if ($price_php !== null & $price_php > 0) {
+          $this->transactionRepo->create(
+            $id,
+            'sell',
+            $accountModel->getRobux(),
+            (float) $price_php
+          );
+        }
+      }
+    }
+
+    $account = new AccountModel($id);
     foreach ($patchData as $field => $value) {
       $method = "set" . str_replace(' ', '', ucwords(str_replace('_', ' ', $field)));
       if (method_exists($account, $method)) {
@@ -63,16 +107,44 @@ class AccountService
       }
     }
 
-    return $this->repo->updatePartial($account);
+    return $this->accountRepo->updatePartial($account);
   }
 
   public function updateStatusBulk($ids, $status)
   {
-    return $this->repo->updateStatusBulk($ids, $status);
+    // --- "Sell" Transaction Logic ---
+    // Check if the account status is being updated to "sold".
+    $SOLD_STATUS_ID = $this->accountRepo->findAccountStatusId('sold');
+    if (isset($status) && $status === $SOLD_STATUS_ID) {
+
+      foreach ($ids as $id) {
+        if ($accountData = $this->accountRepo->findById($id)) {
+          $currentModel = $accountData['model'];
+          $price_php = $patchData['price_php'] ?? $currentModel->getPricePhp();
+          if ($price_php !== null & $price_php > 0) {
+            $this->transactionRepo->create(
+              $id,
+              'sell',
+              $currentModel->getRobux(),
+              (float) $price_php
+            );
+          }
+        }
+      }
+    }
+    return $this->accountRepo->updateStatusBulk($ids, $status);
   }
 
   public function deleteBulk($ids)
   {
-    return $this->repo->deleteBulk($ids);
+    foreach ($ids as $id) {
+      // var_dump($id);
+      if ($this->accountRepo->findById($id)) {
+      }
+
+      //TODO: implement id not found response
+    }
+
+    return $this->accountRepo->deleteBulk($ids);
   }
 }

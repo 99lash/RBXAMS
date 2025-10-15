@@ -6,8 +6,13 @@ use DateTimeImmutable;
 
 class HeroModel
 {
-  private DateTimeImmutable $created_at;
-  private DateTimeImmutable $updated_at;
+  private ?DateTimeImmutable $created_at;
+  private ?DateTimeImmutable $updated_at;
+
+  public function __construct(?DateTimeImmutable $created_at, ?DateTimeImmutable $updated_at = null) {
+    $this->created_at = $created_at;
+    $this->updated_at = $updated_at;
+  }
 
   /**
    * @desc getter methods 
@@ -16,7 +21,7 @@ class HeroModel
   {
     return $this->created_at;
   }
-  public function getUpdatedAt(): DateTimeImmutable
+  public function getUpdatedAt(): ?DateTimeImmutable
   {
     return $this->updated_at;
   }

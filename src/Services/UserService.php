@@ -34,8 +34,9 @@ class UserService
   public function createUser($name, $email, $password, $profilePicUrl)
   {
     $userId = (IdGeneratorFactory::createId(IdType::USER))->generate();
-    $hashed_password = password_hash($password, PASSWORD_BCRYPT); 
-    return $this->repo->create($userId, 3, $name, $email, $hashed_password, $profilePicUrl);
+    $hashed_password = password_hash($password, PASSWORD_BCRYPT);
+    $userRoleId = $this->repo->getUserRoleIdByName('superadmin');
+    return $this->repo->create($userId, $userRoleId, $name, $email, $hashed_password, $profilePicUrl);
   }
 
   public function updateUserById($id)

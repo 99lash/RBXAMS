@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const periodOptions = document.getElementById('period-options');
   const periodLabel = document.getElementById('period-label');
   const tableBody = document.getElementById('summary-table-body');
-  const paginationControls = document.getElementById('pagination-controls'); // New
+  const paginationControls = document.getElementById('pagination-controls');
 
   // Summary Card Elements
   const totalRobuxBoughtEl = document.getElementById('total-robux-bought');
@@ -26,9 +26,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const csvLink = document.getElementById('export-csv');
   const pdfLink = document.getElementById('export-pdf');
 
-  // --- State ---
-  let currentPeriod = 'all';
-  let currentPage = 1; // New: for pagination
+  // --- State (Updated for Persistence) ---
+  const urlParams = new URLSearchParams(window.location.search);
+  const validPeriods = ['all', 'year', 'quarter', 'month', 'week', 'today'];
+  let currentPeriod = urlParams.get('period') || 'all';
+  if (!validPeriods.includes(currentPeriod)) {
+    currentPeriod = 'all'; // Fallback to 'all' if URL param is invalid
+  }
+  let currentPage = 1; // Will be read from URL in the future if needed
 
   // --- Utility Functions ---
   const formatCurrency = (value) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(value);
@@ -37,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const setLoading = (isLoading) => {
     if (isLoading) {
       tableBody.innerHTML = '<tr><td colspan="13" class="text-center"><span class="loading loading-spinner"></span></td></tr>';
-      paginationControls.innerHTML = ''; // Clear pagination while loading
+      paginationControls.innerHTML = '';
     }
   };
 
@@ -50,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // --- New Pagination Function ---
+  // --- Pagination Function ---
   const renderPagination = (pagination) => {
     const { total_items, per_page, current_page, last_page, from, to } = pagination;
 
@@ -74,15 +79,14 @@ document.addEventListener('DOMContentLoaded', () => {
     paginationControls.innerHTML = html;
   };
 
-
-  // --- Core Functions (Updated) ---
+  // --- Core Functions ---
   const updateUI = (response) => {
-    const { data: summaries, pagination } = response; // Updated: handle new response structure
+    const { data: summaries, pagination } = response;
 
     if (summaries.length === 0) {
       tableBody.innerHTML = '<tr><td colspan="13" class="text-center">No data available for this period.</td></tr>';
-      paginationControls.innerHTML = ''; // Clear pagination
-      // Reset all other fields
+      paginationControls.innerHTML = '';
+      // Reset fields...
       totalRobuxBoughtEl.textContent = '0';
       totalRobuxBoughtBreakdownEl.textContent = 'P: 0 | F: 0';
       totalRobuxSoldEl.textContent = '0';
@@ -103,13 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // 1. Update Summary Cards (This logic remains the same as it reflects the whole period)
-    // Note: For pagination, the summary cards should ideally reflect the totals for the *entire period*,
-    // not just the current page. The current backend implementation returns paginated data.
-    // For now, we will recalculate totals on the client side from the full dataset if we decide to fetch it.
-    // Let's assume for now the API will be extended to provide totals separately.
-    // For this implementation, we will leave the top cards as they are, reflecting the totals of the *fetched page*.
-    // This is a known limitation to be addressed later if needed.
     const totals = summaries.reduce((acc, s) => {
       acc.pending_robux_bought += s.pending_robux_bought;
       acc.fastflip_robux_bought += s.fastflip_robux_bought;
@@ -142,9 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
     totalProfitBreakdownEl.textContent = `P: ${formatCurrency(totals.pending_profit_php)} | F: ${formatCurrency(totals.fastflip_profit_php)}`;
     updateTextColor(totalProfitEl, totalProfit);
 
-
-    // 2. Update Details Table
-    tableBody.innerHTML = ''; // Clear loading/old data
+    tableBody.innerHTML = '';
     summaries.forEach(s => {
       const row = document.createElement('tr');
       const totalDailyBought = s.pending_robux_bought + s.fastflip_robux_bought;
@@ -170,9 +165,8 @@ document.addEventListener('DOMContentLoaded', () => {
       tableBody.appendChild(row);
     });
 
-    // 3. Update Summary Statistics & Pagination
-    const daysActive = pagination.total_items; // Use total from pagination
-    const avgDailyProfit = daysActive > 0 ? totalProfit / summaries.length : 0; // Avg for the page
+    const daysActive = pagination.total_items;
+    const avgDailyProfit = daysActive > 0 ? totalProfit / summaries.length : 0;
     const dailyProfits = summaries.map(s => s.pending_profit_php + s.fastflip_profit_php);
     const bestDayProfit = daysActive > 0 ? Math.max(...dailyProfits) : 0;
     const worstDayProfit = daysActive > 0 ? Math.min(...dailyProfits) : 0;
@@ -187,13 +181,13 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTextColor(bestDayProfitEl, bestDayProfit);
     updateTextColor(worstDayProfitEl, worstDayProfit);
 
-    renderPagination(pagination); // New
+    renderPagination(pagination);
   };
 
-  const fetchData = async (period, page = 1) => { // Updated
+  const fetchData = async (period, page = 1) => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/summary?period=${period}&page=${page}`); // Updated
+      const response = await fetch(`/api/summary?period=${period}&page=${page}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -206,21 +200,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // --- Event Listeners ---
+  // --- Event Listeners (Updated) ---
   periodOptions.addEventListener('click', (e) => {
     if (e.target.tagName === 'A') {
       const period = e.target.dataset.period;
       if (period && period !== currentPeriod) {
         currentPeriod = period;
-        currentPage = 1; // Reset to first page
+        currentPage = 1;
         periodLabel.textContent = e.target.textContent;
+
+        // Update URL without reloading
+        const newUrl = `${window.location.pathname}?period=${currentPeriod}`;
+        history.pushState({ path: newUrl }, '', newUrl);
+
         fetchData(currentPeriod, currentPage);
 
-        // Update export links
         if (csvLink) csvLink.href = `/summary/csv?period=${period}`;
         if (pdfLink) pdfLink.href = `/summary/pdf?period=${period}`;
 
-        // Close dropdown
         if (document.activeElement) {
           document.activeElement.blur();
         }
@@ -228,7 +225,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // New: Pagination listener
   paginationControls.addEventListener('click', (e) => {
     const button = e.target.closest('button');
     if (!button) return;
@@ -245,6 +241,13 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 
-  // --- Initial Load ---
+  // --- Initial Load (Updated) ---
+  const initialPeriodText = periodOptions.querySelector(`a[data-period="${currentPeriod}"]`)?.textContent;
+  if (initialPeriodText) {
+      periodLabel.textContent = initialPeriodText;
+      // Also update export links on initial load
+      if (csvLink) csvLink.href = `/summary/csv?period=${currentPeriod}`;
+      if (pdfLink) pdfLink.href = `/summary/pdf?period=${currentPeriod}`;
+  }
   fetchData(currentPeriod, currentPage);
 });

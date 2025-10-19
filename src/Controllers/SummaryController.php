@@ -20,20 +20,25 @@ class SummaryController
 
   public function index()
   {
-    $period = $_GET['period'] ?? 'today';
-    $summaries = $this->summaryService->getSummaries($period);
     $page = '/summary';
     $title = 'Daily Summary | RBXAMS';
     $nav = 'Daily Summary';
     require __DIR__ . '/../Views/index.php';
-    // header('Content-Type: application/json');
-    // if (is_array($summaries)) {
-    //   $response = array_map(fn ($summary) => $summary->jsonSerialize(), $summaries);
-    //   echo json_encode($response);
-    // } else if ($summaries) {
-    //   echo json_encode($summaries->jsonSerialize());
-    // } else {
-    //   echo json_encode([]);
-    // }
+  }
+
+  public function getSummaryData()
+  {
+    $period = $_GET['period'] ?? 'all';
+    $summaries = $this->summaryService->getSummaries($period);
+
+    header('Content-Type: application/json');
+    if (is_array($summaries)) {
+      $response = array_map(fn ($summary) => $summary->jsonSerialize(), $summaries);
+      echo json_encode($response);
+    } else if ($summaries) {
+      echo json_encode($summaries->jsonSerialize());
+    } else {
+      echo json_encode([]);
+    }
   }
 }

@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const fetchData = async (period) => {
     setLoading(true);
     try {
-      const response = await fetch(`/summary?period=${period}`);
+      const response = await fetch(`/api/summary?period=${period}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

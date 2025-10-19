@@ -4,6 +4,8 @@ namespace App\Controllers;
 
 use App\Security\AuthManager;
 use App\Services\SummaryService;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class SummaryController
 {
@@ -87,6 +89,20 @@ class SummaryController
 
   public function exportPdf()
   {
-    echo "PDF export is not yet implemented. Please install a PDF library like dompdf/dompdf first.";
+    try {
+        $period = $_GET['period'] ?? 'all';
+        $pdfContent = $this->summaryService->generatePdfForPeriod($period);
+
+        header('Content-Type: application/pdf');
+        header('Content-Disposition: attachment; filename="RBXAMS_Summary_' . $period . '_' . date('Y-m-d') . '.pdf"');
+        
+        echo $pdfContent;
+        exit;
+    } catch (\Throwable $e) {
+        // Fallback for any unexpected errors in the service
+        header('Content-Type: text/plain');
+        echo 'An unexpected error occurred while generating the PDF: ' . $e->getMessage();
+        exit;
+    }
   }
 }

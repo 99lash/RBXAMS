@@ -6,6 +6,8 @@ use App\Models\AccountModel;
 use App\Repositories\SummaryRepository;
 use App\Utils\AccountType;
 use DateTime;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class SummaryService
 {
@@ -106,5 +108,74 @@ class SummaryService
             default:
                 return $this->getSummaryForDate($today->format('Y-m-d'));
         }
+    }
+
+    public function generatePdfForPeriod(string $period): string
+    {
+        $summaries = $this->getSummaries($period);
+        $summariesArray = is_array($summaries) ? array_map(fn ($s) => $s->jsonSerialize(), $summaries) : ($summaries ? [$summaries->jsonSerialize()] : []);
+
+        // Corrected path to the stylesheet
+        // $stylesheetPath = __DIR__ . '/../../public_html/css/styles.css';
+        // $stylesheet = file_get_contents($stylesheetPath);
+
+        // $html = '<!DOCTYPE html><html><head><style>' . $stylesheet . '</style></head><body>';
+        $html = '<h1>Daily Activity Summary (' . htmlspecialchars($period) . ')</h1>';
+        $html .= '<p>Report generated on: ' . date('Y-m-d H:i:s') . '</p>';
+        
+        // --- Totals and Statistics ---
+        $totals = [
+            'total_bought' => 0, 'total_sold' => 0, 'total_expenses' => 0, 'total_profit' => 0
+        ];
+        foreach ($summariesArray as $s) {
+            $totals['total_bought'] += $s['pending_robux_bought'] + $s['fastflip_robux_bought'];
+            $totals['total_sold'] += $s['pending_robux_sold'] + $s['fastflip_robux_sold'];
+            $totals['total_expenses'] += $s['pending_expenses_php'] + $s['fastflip_expenses_php'];
+            $totals['total_profit'] += $s['pending_profit_php'] + $s['fastflip_profit_php'];
+        }
+        $html .= '<h2>Overall Statistics</h2>';
+        $html .= '<table class="table"><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>';
+        $html .= '<tr><td>Total Robux Bought</td><td>' . number_format($totals['total_bought']) . '</td></tr>';
+        $html .= '<tr><td>Total Robux Sold</td><td>' . number_format($totals['total_sold']) . '</td></tr>';
+        $html .= '<tr><td>Total Expenses</td><td>PHP ' . number_format($totals['total_expenses'], 2) . '</td></tr>';
+        $html .= '<tr><td>Total Profit</td><td>PHP ' . number_format($totals['total_profit'], 2) . '</td></tr>';
+        $html .= '</tbody></table>';
+
+        $html .= '<h2>Daily Details</h2>';
+        $html .= '<table class="table table-zebra"><thead><tr>';
+        $html .= '<th>Date</th><th>Total Bought</th><th>Total Sold</th><th>Total Expenses</th><th>Total Profit</th>';
+        $html .= '</tr></thead><tbody>';
+
+        if (empty($summariesArray)) {
+            $html .= '<tr><td colspan="5">No data available for this period.</td></tr>';
+        } else {
+            foreach ($summariesArray as $s) {
+                $totalDailyBought = $s['pending_robux_bought'] + $s['fastflip_robux_bought'];
+                $totalDailySold = $s['pending_robux_sold'] + $s['fastflip_robux_sold'];
+                $totalDailyExpenses = $s['pending_expenses_php'] + $s['fastflip_expenses_php'];
+                $totalDailyProfit = $s['pending_profit_php'] + $s['fastflip_profit_php'];
+                $html .= '<tr>';
+                $html .= '<td>' . $s['summary_date'] . '</td>';
+                $html .= '<td>' . number_format($totalDailyBought) . '</td>';
+                $html .= '<td>' . number_format($totalDailySold) . '</td>';
+                $html .= '<td>' . number_format($totalDailyExpenses, 2) . '</td>';
+                $html .= '<td>' . number_format($totalDailyProfit, 2) . '</td>';
+                $html .= '</tr>';
+            }
+        }
+
+        $html .= '</tbody></table></body></html>';
+
+        $options = new Options();
+        $options->set('isRemoteEnabled', false);
+        $options->set('defaultFont', 'sans-serif');
+
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+        
+        // Return the PDF content as a string
+        return $dompdf->output();
     }
 }

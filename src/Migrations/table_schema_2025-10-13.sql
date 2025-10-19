@@ -77,7 +77,7 @@ CREATE TABLE `accounts` (
 -- ----------------------------
 -- Table structure for accounts_transactions
 -- ----------------------------
-DROP TABLE IF EXISTS `accounts_transactions`;
+DROP TABLE IF EXISTS `transactions`;
 CREATE TABLE `transactions` (
   `id` char(36) NOT NULL,
   `account_id` BIGINT DEFAULT NULL,

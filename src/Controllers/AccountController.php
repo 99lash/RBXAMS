@@ -120,7 +120,8 @@ class AccountController
   public function updateById($id)
   {
     $id = intval($id);
-    $response = $this->accountService->updateAccountById($id);
+    $patchData = json_decode(file_get_contents("php://input"), true);
+    $response = $this->accountService->updateAccountById($id, $patchData);
     header('Content-Type: application/json');
     echo json_encode(["success" => $response]);
   }

@@ -35,7 +35,7 @@ class UserRepository
       //   $userData['profile_pic_url'] || null
       // );
       $user = UserModel::fromArray($userData);
-      $users[] = $user->toArray();
+      $users[] = $user->jsonSerialize();
     }
     return $users;
   }

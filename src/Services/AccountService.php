@@ -8,18 +8,25 @@ use App\Services\RobloxAPI\RobloxService;
 use App\Transformers\AccountTransformer;
 use App\Utils\AccountType;
 use App\Models\AccountModel;
+use App\Services\SummaryService;
 
 class AccountService
 {
   private AccountRepository $accountRepo;
   private TransactionRepository $transactionRepo;
   private RobloxService $robloxService;
+  private SummaryService $summaryService;
 
-  public function __construct()
-  {
-    $this->accountRepo = new AccountRepository();
-    $this->robloxService = new RobloxService();
-    $this->transactionRepo = new TransactionRepository();
+  public function __construct(
+    AccountRepository $accountRepo = null,
+    TransactionRepository $transactionRepo = null,
+    RobloxService $robloxService = null,
+    SummaryService $summaryService = null
+  ) {
+    $this->accountRepo = $accountRepo ?? new AccountRepository();
+    $this->transactionRepo = $transactionRepo ?? new TransactionRepository();
+    $this->robloxService = $robloxService ?? new RobloxService();
+    $this->summaryService = $summaryService ?? new SummaryService();
   }
 
   public function getAllAccounts()
@@ -41,7 +48,7 @@ class AccountService
       ->setCookieEnc($cookieEnc)
       ->setAccountStatusId($statusId)
       ->setRobux($status == AccountType::PENDING ? $data['pendingRobuxTotal'] : $data['robux']);
-    // var_dump($account);
+
     return $this->accountRepo->create($account);
   }
 
@@ -54,12 +61,14 @@ class AccountService
   public function getById($id)
   {
     $result = $this->accountRepo->findById(intval($id));
+    if (!$result) {
+      return null;
+    }
     return AccountTransformer::transform($result);
   }
 
-  public function updateAccountById($id)
+  public function updateAccountById($id, $patchData)
   {
-    $patchData = json_decode(file_get_contents("php://input"), true);
 
     if (empty($patchData))
       return false;
@@ -77,9 +86,14 @@ class AccountService
             $currentModel->getRobux(),
             (float) $patchData['cost_php']
           );
+
+          $currentModel->setCostPhp((float) $patchData['cost_php']);
+          $this->summaryService->updateSummaryOnBuy($currentModel);
         }
       }
     }
+
+
 
     // --- "Sell" Transaction Logic ---
     // Check if the account status is being updated to "sold".
@@ -88,13 +102,18 @@ class AccountService
       if ($accountData = $this->accountRepo->findById($id)) {
         $accountModel = $accountData['model'];
         $price_php = $patchData['price_php'] ?? $accountModel->getPricePhp();
-        if ($price_php !== null & $price_php > 0) {
+
+        //TODO: prevent multiple sell even if the account status is sold
+        if ($price_php !== null && $price_php > 0 && $accountModel->getAccountStatusId() !== $SOLD_STATUS_ID) {
           $this->transactionRepo->create(
             $id,
             'sell',
             $accountModel->getRobux(),
             (float) $price_php
           );
+
+          $accountModel->setPricePhp((float) $price_php);
+          $this->summaryService->updateSummaryOnSell($accountModel);
         }
       }
     }
@@ -120,14 +139,15 @@ class AccountService
       foreach ($ids as $id) {
         if ($accountData = $this->accountRepo->findById($id)) {
           $currentModel = $accountData['model'];
-          $price_php = $patchData['price_php'] ?? $currentModel->getPricePhp();
-          if ($price_php !== null & $price_php > 0) {
+          $price_php = $currentModel->getPricePhp() ?? 0;
+          if ($price_php !== null && $price_php > 0) {
             $this->transactionRepo->create(
               $id,
               'sell',
               $currentModel->getRobux(),
               (float) $price_php
             );
+            $this->summaryService->updateSummaryOnSell($currentModel);
           }
         }
       }

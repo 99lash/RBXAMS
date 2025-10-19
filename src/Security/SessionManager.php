@@ -6,6 +6,9 @@ class SessionManager
 {
   public static function start()
   {
+    // 30 days cookie lifetime to prevent logout on browser close
+    $cookieLifetime = 2592000; 
+    ini_set('session.cookie_lifetime', $cookieLifetime);
     ini_set('session.cookie_httponly', 1);
     ini_set('session.use_only_cookies', 1);
     ini_set('session.cookie_secure', isset($_SERVER['HTTPS']));

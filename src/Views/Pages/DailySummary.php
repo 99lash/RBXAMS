@@ -20,14 +20,14 @@
           <li><a data-period="today">Today</a></li>
         </ul>
       </div>
-      <button class="btn btn-outline">
+      <a id="export-csv" class="btn btn-outline" href="/summary/csv?period=all">
         <i data-lucide="download" class="w-4 h-4"></i>
         CSV
-      </button>
-      <button class="btn btn-outline">
+      </a>
+      <a id="export-pdf" class="btn btn-outline" href="/summary/pdf?period=all">
         <i data-lucide="file-text" class="w-4 h-4"></i>
         PDF
-      </button>
+      </a>
     </div>
   </div>
 

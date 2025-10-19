@@ -21,6 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const worstDayProfitEl = document.getElementById('worst-day-profit');
   const daysActiveEl = document.getElementById('days-active');
 
+  // Export Links
+  const csvLink = document.getElementById('export-csv');
+  const pdfLink = document.getElementById('export-pdf');
+
   // --- State ---
   let currentPeriod = 'all';
 
@@ -172,6 +176,11 @@ document.addEventListener('DOMContentLoaded', () => {
         currentPeriod = period;
         periodLabel.textContent = e.target.textContent;
         fetchData(currentPeriod);
+
+        // Update export links
+        if (csvLink) csvLink.href = `/summary/csv?period=${period}`;
+        if (pdfLink) pdfLink.href = `/summary/pdf?period=${period}`;
+
         // Close dropdown
         if (document.activeElement) {
           document.activeElement.blur();

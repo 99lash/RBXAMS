@@ -28,21 +28,18 @@ class SummaryController
     require __DIR__ . '/../Views/index.php';
   }
 
-  public function getSummaryData()
-  {
-    $period = $_GET['period'] ?? 'all';
-    $summaries = $this->summaryService->getSummaries($period);
+    public function getSummaryData()
+    {
+        $period = $_GET['period'] ?? 'today';
+        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+        $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10; // Default limit of 10
 
-    header('Content-Type: application/json');
-    if (is_array($summaries)) {
-      $response = array_map(fn ($summary) => $summary->jsonSerialize(), $summaries);
-      echo json_encode($response);
-    } else if ($summaries) {
-      echo json_encode($summaries->jsonSerialize());
-    } else {
-      echo json_encode([]);
+        $paginatedResult = $this->summaryService->getSummaries($period, $page, $limit);
+
+        header('Content-Type: application/json');
+        echo json_encode($paginatedResult);
+        exit;
     }
-  }
 
   public function exportCsv()
   {

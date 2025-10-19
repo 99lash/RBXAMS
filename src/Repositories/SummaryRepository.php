@@ -98,4 +98,51 @@ class SummaryRepository
         }
         return $summaries;
     }
+
+    public function findAndCountBetweenDates(string $startDate, string $endDate, int $limit, int $offset): array
+    {
+        // Get total count for the period
+        $stmt = $this->mysqli->prepare("SELECT COUNT(*) as total FROM daily_summary WHERE summary_date BETWEEN ? AND ?");
+        $stmt->bind_param('ss', $startDate, $endDate);
+        $stmt->execute();
+        $total = $stmt->get_result()->fetch_assoc()['total'];
+
+        // Get paginated data
+        $stmt = $this->mysqli->prepare("SELECT * FROM daily_summary WHERE summary_date BETWEEN ? AND ? ORDER BY summary_date DESC LIMIT ? OFFSET ?");
+        $stmt->bind_param('ssii', $startDate, $endDate, $limit, $offset);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $summaries = [];
+        while ($row = $result->fetch_assoc()) {
+            $summaries[] = SummaryModel::fromArray($row);
+        }
+
+        return [
+            'data' => $summaries,
+            'total' => $total
+        ];
+    }
+
+    public function findAndCountAll(int $limit, int $offset): array
+    {
+        // Get total count
+        $stmt = $this->mysqli->prepare("SELECT COUNT(*) as total FROM daily_summary");
+        $stmt->execute();
+        $total = $stmt->get_result()->fetch_assoc()['total'];
+
+        // Get paginated data
+        $stmt = $this->mysqli->prepare("SELECT * FROM daily_summary ORDER BY summary_date DESC LIMIT ? OFFSET ?");
+        $stmt->bind_param('ii', $limit, $offset);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $summaries = [];
+        while ($row = $result->fetch_assoc()) {
+            $summaries[] = SummaryModel::fromArray($row);
+        }
+
+        return [
+            'data' => $summaries,
+            'total' => $total
+        ];
+    }
 }

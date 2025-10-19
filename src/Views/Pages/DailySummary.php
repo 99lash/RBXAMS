@@ -94,6 +94,9 @@
           </tbody>
         </table>
       </div>
+      <div id="pagination-controls" class="flex justify-between items-center mt-4">
+        <!-- Pagination will be rendered here by JavaScript -->
+      </div>
     </div>
   </div>
 

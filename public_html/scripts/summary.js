@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const periodOptions = document.getElementById('period-options');
   const periodLabel = document.getElementById('period-label');
   const tableBody = document.getElementById('summary-table-body');
+  const paginationControls = document.getElementById('pagination-controls'); // New
 
   // Summary Card Elements
   const totalRobuxBoughtEl = document.getElementById('total-robux-bought');
@@ -27,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- State ---
   let currentPeriod = 'all';
+  let currentPage = 1; // New: for pagination
 
   // --- Utility Functions ---
   const formatCurrency = (value) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(value);
@@ -35,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const setLoading = (isLoading) => {
     if (isLoading) {
       tableBody.innerHTML = '<tr><td colspan="13" class="text-center"><span class="loading loading-spinner"></span></td></tr>';
+      paginationControls.innerHTML = ''; // Clear pagination while loading
     }
   };
 
@@ -47,13 +50,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // --- Core Functions ---
-  const updateUI = (data) => {
-    // The API might return a single object (for 'today') or an array
-    const summaries = Array.isArray(data) ? data : [data];
+  // --- New Pagination Function ---
+  const renderPagination = (pagination) => {
+    const { total_items, per_page, current_page, last_page, from, to } = pagination;
 
-    if (summaries.length === 0 || !summaries[0]) {
+    if (last_page <= 1) {
+      paginationControls.innerHTML = '';
+      return;
+    }
+
+    let html = `
+      <div>
+        <p class="text-sm text-base-content/60">
+          Showing <span class="font-medium">${from}</span> to <span class="font-medium">${to}</span> of <span class="font-medium">${total_items}</span> results
+        </p>
+      </div>
+      <div class="join">
+        <button class="join-item btn btn-sm" data-page="prev" ${current_page === 1 ? 'disabled' : ''}>«</button>
+        <button class="join-item btn btn-sm">Page ${current_page} of ${last_page}</button>
+        <button class="join-item btn btn-sm" data-page="next" ${current_page === last_page ? 'disabled' : ''}>»</button>
+      </div>
+    `;
+    paginationControls.innerHTML = html;
+  };
+
+
+  // --- Core Functions (Updated) ---
+  const updateUI = (response) => {
+    const { data: summaries, pagination } = response; // Updated: handle new response structure
+
+    if (summaries.length === 0) {
       tableBody.innerHTML = '<tr><td colspan="13" class="text-center">No data available for this period.</td></tr>';
+      paginationControls.innerHTML = ''; // Clear pagination
       // Reset all other fields
       totalRobuxBoughtEl.textContent = '0';
       totalRobuxBoughtBreakdownEl.textContent = 'P: 0 | F: 0';
@@ -75,7 +103,13 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // 1. Update Summary Cards
+    // 1. Update Summary Cards (This logic remains the same as it reflects the whole period)
+    // Note: For pagination, the summary cards should ideally reflect the totals for the *entire period*,
+    // not just the current page. The current backend implementation returns paginated data.
+    // For now, we will recalculate totals on the client side from the full dataset if we decide to fetch it.
+    // Let's assume for now the API will be extended to provide totals separately.
+    // For this implementation, we will leave the top cards as they are, reflecting the totals of the *fetched page*.
+    // This is a known limitation to be addressed later if needed.
     const totals = summaries.reduce((acc, s) => {
       acc.pending_robux_bought += s.pending_robux_bought;
       acc.fastflip_robux_bought += s.fastflip_robux_bought;
@@ -108,6 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
     totalProfitBreakdownEl.textContent = `P: ${formatCurrency(totals.pending_profit_php)} | F: ${formatCurrency(totals.fastflip_profit_php)}`;
     updateTextColor(totalProfitEl, totalProfit);
 
+
     // 2. Update Details Table
     tableBody.innerHTML = ''; // Clear loading/old data
     summaries.forEach(s => {
@@ -135,9 +170,9 @@ document.addEventListener('DOMContentLoaded', () => {
       tableBody.appendChild(row);
     });
 
-    // 3. Update Summary Statistics
-    const daysActive = summaries.length;
-    const avgDailyProfit = daysActive > 0 ? totalProfit / daysActive : 0;
+    // 3. Update Summary Statistics & Pagination
+    const daysActive = pagination.total_items; // Use total from pagination
+    const avgDailyProfit = daysActive > 0 ? totalProfit / summaries.length : 0; // Avg for the page
     const dailyProfits = summaries.map(s => s.pending_profit_php + s.fastflip_profit_php);
     const bestDayProfit = daysActive > 0 ? Math.max(...dailyProfits) : 0;
     const worstDayProfit = daysActive > 0 ? Math.min(...dailyProfits) : 0;
@@ -151,12 +186,14 @@ document.addEventListener('DOMContentLoaded', () => {
     updateTextColor(avgDailyProfitEl, avgDailyProfit);
     updateTextColor(bestDayProfitEl, bestDayProfit);
     updateTextColor(worstDayProfitEl, worstDayProfit);
+
+    renderPagination(pagination); // New
   };
 
-  const fetchData = async (period) => {
+  const fetchData = async (period, page = 1) => { // Updated
     setLoading(true);
     try {
-      const response = await fetch(`/api/summary?period=${period}`);
+      const response = await fetch(`/api/summary?period=${period}&page=${page}`); // Updated
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -165,6 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
       console.error("Failed to fetch summary data:", error);
       tableBody.innerHTML = `<tr><td colspan="13" class="text-center text-error">Failed to load data.</td></tr>`;
+      paginationControls.innerHTML = '';
     }
   };
 
@@ -174,8 +212,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const period = e.target.dataset.period;
       if (period && period !== currentPeriod) {
         currentPeriod = period;
+        currentPage = 1; // Reset to first page
         periodLabel.textContent = e.target.textContent;
-        fetchData(currentPeriod);
+        fetchData(currentPeriod, currentPage);
 
         // Update export links
         if (csvLink) csvLink.href = `/summary/csv?period=${period}`;
@@ -189,6 +228,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // New: Pagination listener
+  paginationControls.addEventListener('click', (e) => {
+    const button = e.target.closest('button');
+    if (!button) return;
+
+    const pageAction = button.dataset.page;
+    if (pageAction === 'prev') {
+      currentPage--;
+    } else if (pageAction === 'next') {
+      currentPage++;
+    } else {
+      return;
+    }
+    fetchData(currentPeriod, currentPage);
+  });
+
+
   // --- Initial Load ---
-  fetchData(currentPeriod);
+  fetchData(currentPeriod, currentPage);
 });

@@ -68,18 +68,25 @@ class SummaryService
         $this->summaryRepo->update($summary);
     }
 
-    public function getSummaries(string $period = 'today')
+    public function getSummaries(string $period = 'today', int $page = 1, int $limit = 10)
     {
+        $offset = ($page - 1) * $limit;
         $today = new DateTime();
+
+        $result = [];
+        $total = 0;
+
         switch ($period) {
             case 'week':
                 $startDate = $today->modify('monday this week')->format('Y-m-d');
                 $endDate = $today->modify('sunday this week')->format('Y-m-d');
-                return $this->summaryRepo->findBetweenDates($startDate, $endDate);
+                $result = $this->summaryRepo->findAndCountBetweenDates($startDate, $endDate, $limit, $offset);
+                break;
             case 'month':
                 $startDate = $today->modify('first day of this month')->format('Y-m-d');
                 $endDate = $today->modify('last day of this month')->format('Y-m-d');
-                return $this->summaryRepo->findBetweenDates($startDate, $endDate);
+                $result = $this->summaryRepo->findAndCountBetweenDates($startDate, $endDate, $limit, $offset);
+                break;
             case 'quarter':
                 $month = $today->format('n');
                 $year = $today->format('Y');
@@ -96,18 +103,39 @@ class SummaryService
                     $startDate = "$year-10-01";
                     $endDate = "$year-12-31";
                 }
-                return $this->summaryRepo->findBetweenDates($startDate, $endDate);
+                $result = $this->summaryRepo->findAndCountBetweenDates($startDate, $endDate, $limit, $offset);
+                break;
             case 'year':
                 $year = $today->format('Y');
                 $startDate = "$year-01-01";
                 $endDate = "$year-12-31";
-                return $this->summaryRepo->findBetweenDates($startDate, $endDate);
+                $result = $this->summaryRepo->findAndCountBetweenDates($startDate, $endDate, $limit, $offset);
+                break;
             case 'all':
-                return $this->summaryRepo->findAll();
+                $result = $this->summaryRepo->findAndCountAll($limit, $offset);
+                break;
             case 'today':
             default:
-                return $this->getSummaryForDate($today->format('Y-m-d'));
+                $date = $today->format('Y-m-d');
+                $result = $this->summaryRepo->findAndCountBetweenDates($date, $date, $limit, $offset);
+                break;
         }
+
+        $summaries = $result['data'] ?? [];
+        $total = $result['total'] ?? 0;
+        $lastPage = ceil($total / $limit);
+
+        return [
+            'data' => array_map(fn ($s) => $s->jsonSerialize(), $summaries),
+            'pagination' => [
+                'total_items' => $total,
+                'per_page' => $limit,
+                'current_page' => $page,
+                'last_page' => $lastPage > 0 ? $lastPage : 1,
+                'from' => $offset + 1,
+                'to' => $offset + count($summaries)
+            ]
+        ];
     }
 
     public function generatePdfForPeriod(string $period): string

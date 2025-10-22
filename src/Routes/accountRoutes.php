@@ -15,6 +15,13 @@ $accountRouter = &$router;
 
 /** 
  *  @method GET
+ *  @route  /api/accounts
+ *  @desc   Get all accounts as JSON
+ */
+$accountRouter->get('/api/accounts', 'AccountController@getAccountsJson');
+
+/** 
+ *  @method GET
  *  @route  /accounts
  *  @desc   Get manage accounts page
  */

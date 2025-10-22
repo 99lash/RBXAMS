@@ -16,11 +16,27 @@ class AccountRepository
     $this->mysqli = (new Database())->getConnection();
   }
 
-  public function findALl()
+  public function findAll(?string $sortBy = null, ?string $sortOrder = null): array
   {
     $results = [];
     $accountsData = [];
-    // $query = "SELECT * FROM accounts";
+    $allowedSortColumns = [
+      'name', 'status', 'robux', 'cost_php', 'price_php', 'date_added', 'sold_date',
+      'profit_php' // Assuming profit_php can be sorted if calculated in query or added to model
+    ];
+
+    $orderBy = "";
+    if ($sortBy && in_array($sortBy, $allowedSortColumns)) {
+      $sortOrder = strtoupper($sortOrder) === 'DESC' ? 'DESC' : 'ASC';
+      // Map frontend sort names to actual DB columns if they differ
+      $dbSortBy = $sortBy;
+      if ($sortBy === 'date_added') $dbSortBy = 'a.created_at';
+      if ($sortBy === 'profit_php') $dbSortBy = '(a.price_php - a.cost_php)'; // Calculate profit for sorting
+      if ($sortBy === 'status') $dbSortBy = 's.name';
+
+      $orderBy = " ORDER BY {$dbSortBy} {$sortOrder}";
+    }
+
     $query = "
     SELECT
       a.id,
@@ -35,14 +51,15 @@ class AccountRepository
       a.sold_rate_usd,
       a.unpend_date,
       a.sold_date,
-      a.created_at,
+      a.created_at AS date_added,
       a.updated_at,
-      a.deleted_at
+      a.deleted_at,
+      (a.price_php - a.cost_php) AS profit_php
     FROM accounts AS a
     LEFT JOIN account_status AS s 
     ON a.account_status_id = s.id
     WHERE a.deleted_at IS NULL
-    ";
+    " . $orderBy;
 
     $result = $this->mysqli->query($query);
     if (!$result) {
@@ -57,9 +74,9 @@ class AccountRepository
       $account = AccountModel::fromArray($data);
       $results[] = [
         'model' => $account,
-        'status' => $data['status']
+        'status' => $data['status'],
+        'profit_php' => $data['profit_php']
       ];
-      // $accounts[] = $accountData;
     }
     return $results;
   }

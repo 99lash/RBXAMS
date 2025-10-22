@@ -44,8 +44,8 @@ class SummaryController
   public function exportCsv()
   {
     $period = $_GET['period'] ?? 'all';
-    $summaries = $this->summaryService->getSummaries($period);
-    $summariesArray = is_array($summaries) ? array_map(fn ($s) => $s->jsonSerialize(), $summaries) : ($summaries ? [$summaries->jsonSerialize()] : []);
+    $summariesResult = $this->summaryService->getSummaries($period);
+    $summariesArray = $summariesResult['data'] ?? [];
 
     header('Content-Type: text/csv');
     header('Content-Disposition: attachment; filename="RBXAMS_Summary_' . $period . '_' . date('Y-m-d') . '.csv"');

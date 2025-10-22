@@ -29,9 +29,9 @@ class AccountService
     $this->summaryService = $summaryService ?? new SummaryService();
   }
 
-  public function getAllAccounts()
+  public function getAllAccounts(?string $sortBy = null, ?string $sortOrder = null)
   {
-    $results = $this->accountRepo->findALl();
+    $results = $this->accountRepo->findAll($sortBy, $sortOrder);
     // return AccountTransformer::transform($results);
     return AccountTransformer::transformCollection($results);
   }

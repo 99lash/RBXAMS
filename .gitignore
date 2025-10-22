@@ -1,5 +1,4 @@
 vendor
 node_modules
 .env
-public_html/css/styles.css
 .phpunit.result.cache

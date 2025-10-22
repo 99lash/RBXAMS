@@ -140,8 +140,8 @@ class SummaryService
 
     public function generatePdfForPeriod(string $period): string
     {
-        $summaries = $this->getSummaries($period);
-        $summariesArray = is_array($summaries) ? array_map(fn ($s) => $s->jsonSerialize(), $summaries) : ($summaries ? [$summaries->jsonSerialize()] : []);
+        $summariesResult = $this->getSummaries($period);
+        $summariesArray = $summariesResult['data'] ?? [];
 
         // Corrected path to the stylesheet
         // $stylesheetPath = __DIR__ . '/../../public_html/css/styles.css';

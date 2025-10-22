@@ -32,7 +32,7 @@ class AccountTransformer
       'cost_php' => $account->getCostPhp(),
       'cost_rate_php' => round($costRatePhp, 2), // Calculated on the fly
       'price_php' => $account->getPricePhp(),
-      'profit_php' => $account->profit_php, // Calculated from the model's constructor
+      'profit_php' => $data['profit_php'], // Calculated from the model's constructor
       'used_to_php_rate_on_sale' => $account->getUsdToPhpRateOnSale(),
       'sold_rate_usd' => $account->getSoldRateUsd(),
       'unpend_date' => $account->getUnpendDate(),

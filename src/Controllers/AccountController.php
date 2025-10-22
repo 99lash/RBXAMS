@@ -20,16 +20,20 @@ class AccountController
   }
   public function index()
   {
-    // $currentUser = $this->authManager->requireAuth();
     $page = '/accounts';
     $title = 'Accounts | RBXAMS';
     $nav = 'Accounts';
+    require __DIR__ . '/../Views/index.php';
+  }
+
+  public function getAccountsJson()
+  {
     header('Content-Type: application/json');
-    $accounts = $this->accountService->getAllAccounts();
+    $sortBy = $_GET['sort_by'] ?? null;
+    $sortOrder = $_GET['sort_order'] ?? 'asc'; // Default to ascending
+    $accounts = $this->accountService->getAllAccounts($sortBy, $sortOrder);
     echo json_encode($accounts);
-    
-    // TODO: implement the accounts page.
-    // require __DIR__ . '/../Views/index.php';
+    exit;
   }
 
   public function getById($id)

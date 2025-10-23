@@ -169,7 +169,7 @@ class AccountRepository
 
   public function findByCookie($cookieEnc): ?AccountModel
   {
-    $stmt = $this->mysqli->prepare("SELECT * FROM accounts WHERE cookie_enc = ?");
+    $stmt = $this->mysqli->prepare("SELECT * FROM accounts WHERE cookie_enc = ? AND deleted_at IS NULL");
     $stmt->bind_param("s", $cookieEnc);
     $stmt->execute();
     $row = $stmt->get_result()->fetch_assoc();
@@ -186,6 +186,20 @@ class AccountRepository
             id, user_id, account_type, account_status_id, name, cookie_enc,
             robux, cost_php, price_php, usd_to_php_rate_on_sale, sold_rate_usd, sold_date, deleted_at
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+            user_id = VALUES(user_id),
+            account_type = VALUES(account_type),
+            account_status_id = VALUES(account_status_id),
+            name = VALUES(name),
+            cookie_enc = VALUES(cookie_enc),
+            robux = VALUES(robux),
+            cost_php = VALUES(cost_php),
+            price_php = VALUES(price_php),
+            usd_to_php_rate_on_sale = VALUES(usd_to_php_rate_on_sale),
+            sold_rate_usd = VALUES(sold_rate_usd),
+            sold_date = VALUES(sold_date),
+            deleted_at = NULL,
+            updated_at = NOW()
     ");
 
     $id = $account->getId();

@@ -117,10 +117,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (collapsed) {
       // place to the right of the sidebar (vertical align with button center)
-      const gap = 8; // px spacing from sidebar edge
-      left = Math.min(sidebarRect.right + gap, viewportW - menuRect.width - 8);
+      const gap = 12; // px spacing from sidebar edge
+      left = Math.min(sidebarRect.right + gap, viewportW - menuRect.width - gap);
       // align top to button top (but ensure it doesn't overflow bottom)
-      top = Math.min(Math.max(btnRect.top, 8), viewportH - menuRect.height - 8);
+      top = Math.min(Math.max(btnRect.top, 8), viewportH - menuRect.height - gap);
     } else {
       // expanded: position above the button (dropdown-top + dropdown-end behavior)
       const gap = 8;

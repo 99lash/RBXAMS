@@ -1,26 +1,33 @@
 <?php if ($page != '/login'): ?>
-  <header
-    class="border-b border-base-300 flex justify-between items-center px-4 py-3 sticky top-0">
-    <!-- Left: Sidebar toggle and breadcrumbs -->
-    <div class="flex items-center gap-2">
-      <button id="toggle-sidebar" class="btn btn-sm btn-ghost">
-        <i data-lucide="panel-right" class="w-4 h-4"></i>
-      </button>
-      <nav class="breadcrumbs">
-        <ul class="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-400">
-          <li>
-            <a class="link">RBXAMS</a>
-          </li>
-          <?php if (isset($nav) && isset($page)): ?>
+  <header class="border-b border-base-300 flex justify-between items-center px-4 py-3 sticky top-0">
+    <?php if ($page != '/404' && $page != '/404'): ?>
+      <!-- Left: Sidebar toggle and breadcrumbs -->
+      <div class="flex items-center gap-2">
+        <button id="toggle-sidebar" class="btn btn-sm btn-ghost">
+          <i data-lucide="panel-right" class="w-4 h-4"></i>
+        </button>
+        <nav class="breadcrumbs">
+          <ul class="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-400">
             <li>
-              <a class="link" href="<?= $page ?>">
-                <?= $nav ?>
-              </a>
+              <a class="link">RBXAMS</a>
             </li>
-          <?php endif; ?>
-        </ul>
-      </nav>
-    </div>
+            <?php if (isset($nav) && isset($page)): ?>
+              <li>
+                <a class="link" href="<?= $page ?>">
+                  <?= $nav ?>
+                </a>
+              </li>
+            <?php endif; ?>
+          </ul>
+        </nav>
+      </div>
+    <?php else: ?>
+      <!-- Branding -->
+      <div class="p-4 flex items-center gap-2">
+        <i data-lucide="line-chart" class="w-6 h-6 text-primary"></i>
+        <span class="font-bold text-lg sidebar-text">RBXAMS</span>
+      </div>
+    <?php endif; ?>
 
     <!-- Right: Actions -->
     <div class="flex items-center gap-4">

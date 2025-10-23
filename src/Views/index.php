@@ -86,7 +86,7 @@ if (property_exists($this, 'currentUser')) {
             //   require 'Pages/Register.php';
             //   break;
             default:
-              var_dump($page);
+              // var_dump($page);
               require 'Pages/404.php';
               break;
           }

@@ -32,7 +32,7 @@ if (property_exists($this, 'currentUser')) {
 
     document.addEventListener('DOMContentLoaded', () => {
       const sidebar = document.getElementById('sidebar');
-      if (localStorage.getItem('sidebar') === 'collapsed') {
+      if (sidebar && localStorage.getItem('sidebar') === 'collapsed') { // Add sidebar check here
         sidebar.classList.remove('w-64');
         sidebar.classList.add('w-16', 'collapsed');
       }

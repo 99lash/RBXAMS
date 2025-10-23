@@ -83,11 +83,16 @@
     </div>
 
     <!-- User info dropdown-->
-    <div id="user-info-root" class="relative w-full border-t border-base-300 pb-2">
-      <button id="userMenuBtn" class="btn btn-ghost normal-case flex justify-start items-center gap-2 w-full px-4 py-8 hover:bg-base-200
-           group-[.collapsed]:justify-center" aria-expanded="false" aria-controls="userMenu">
+    <div id="user-info-root" class="relative w-full p-4">
+      <button id="userMenuBtn" class="btn btn-ghost normal-case flex justify-start items-center gap-2 w-full px-4 py-8 rounded-full bg-base-300
+           group-[.collapsed]:justify-center
+           group-[.collapsed]:rounded-none
+           group-[.collapsed]:bg-transparent
+           group-[.collapsed]:border-none
+           group-[.collapsed]:shadow-none"
+           aria-expanded="false" aria-controls="userMenu">
         <div class="avatar placeholder">
-          <div class="bg-neutral text-neutral-content rounded-full w-10 flex items-center justify-center">
+          <div class="bg-neutral text-neutral-content rounded-full w-8 flex items-center justify-center">
             <span class="text-lg">ASH</span>
           </div>
         </div>
@@ -99,8 +104,8 @@
 
       <!-- Hidden template for the dropdown content. We'll portal this into body on open -->
       <template id="userMenuTemplate">
-        <ul id="userMenu" class="menu p-2 shadow border border-base-300 bg-base-100/95 rounded-box z-[2000] w-60" role="menu"
-          style="position:fixed; display:block; visibility:hidden;">
+        <ul id="userMenu" class="menu p-2 shadow border border-base-300 bg-base-100/95 rounded-box z-[2000] w-60"
+          role="menu" style="position:fixed; display:block; visibility:hidden;">
           <li><a href="#" role="menuitem"><i data-lucide="bell" class="w-4 h-4 inline-block mr-2"></i>Notifications</a>
           </li>
           <li>

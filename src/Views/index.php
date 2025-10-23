@@ -48,7 +48,7 @@ if (property_exists($this, 'currentUser')) {
     <?php
     require_once 'Partials/Sidebar.php';
     ?>
-    <div class="flex-1" id="main-container">
+    <div class="flex-1 min-w-0" id="main-container">
       <!-- Header -->
       <?php
       require_once 'Partials/Header.php';

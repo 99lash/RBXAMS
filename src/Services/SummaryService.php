@@ -72,6 +72,7 @@ class SummaryService
     {
         $offset = ($page - 1) * $limit;
         $today = new DateTime();
+        $this->ensureSummaryExists($today->format('Y-m-d'));
 
         $result = [];
         $total = 0;

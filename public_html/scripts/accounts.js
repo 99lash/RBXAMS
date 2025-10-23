@@ -233,7 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const response = await fetch('/accounts/deleteBulk', {
+      const response = await fetch('/accounts/bulk-delete', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ids: selectedIds })
@@ -255,7 +255,7 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
     const formData = new FormData(addAccountForm);
     try {
-      const response = await fetch('/accounts/create', {
+      const response = await fetch('/accounts', {
         method: 'POST',
         body: formData
       });
@@ -270,6 +270,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (result.failed.length > 0) {
           result.failed.forEach(fail => showToast(`Failed to add: ${fail.cookie} (${fail.message})`, 'error'));
         }
+        console.log(result);
         add_account_modal.close();
         addAccountForm.reset();
         fetchAccounts();
@@ -305,7 +306,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
       try {
-        const response = await fetch(`/accounts/deleteBulk`, {
+        const response = await fetch(`/accounts/bulk-delete`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ids: [id] })

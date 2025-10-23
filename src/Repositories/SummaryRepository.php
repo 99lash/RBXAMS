@@ -32,8 +32,19 @@ class SummaryRepository
     public function create(string $date): bool
     {
         $stmt = $this->mysqli->prepare("INSERT INTO daily_summary (summary_date) VALUES (?)");
+        if ($stmt === false) {
+            error_log('MySQLi prepare failed: ' . $this->mysqli->error);
+            return false;
+        }
+
         $stmt->bind_param('s', $date);
-        return $stmt->execute();
+        
+        if (!$stmt->execute()) {
+            error_log('MySQLi execute failed: ' . $stmt->error);
+            return false;
+        }
+
+        return true;
     }
 
     public function update(SummaryModel $summary): bool

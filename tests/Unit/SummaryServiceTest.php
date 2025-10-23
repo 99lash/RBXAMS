@@ -138,4 +138,22 @@ class SummaryServiceTest extends TestCase
 
     $this->summaryService->updateSummaryOnSell($account);
   }
+
+  public function test_getSummaryForDate_returns_existing_summary()
+  {
+    $date = '2025-10-18';
+    $existingSummary = new SummaryModel($date);
+
+    $this->summaryRepoMock->expects($this->exactly(2))
+      ->method('findByDate')
+      ->with($date)
+      ->willReturn($existingSummary);
+
+    $this->summaryRepoMock->expects($this->never())
+      ->method('create');
+
+    $result = $this->summaryService->getSummaryForDate($date);
+
+    $this->assertSame($existingSummary, $result);
+  }
 }

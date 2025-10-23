@@ -3,7 +3,7 @@
   <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
     <div>
       <h1 class="text-2xl font-bold">Manage Accounts</h1>
-      <p class="text-base-content/70">View, edit, and manage your ROBLOX accounts with advanced features</p>
+      <p class="text-base-content/70">Add, view, edit, and manage your ROBLOX accounts with advanced features</p>
     </div>
     <div class="flex items-center gap-2">
       <button class="btn btn-primary" onclick="add_account_modal.showModal()">

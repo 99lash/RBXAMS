@@ -82,56 +82,7 @@
       </nav>
     </div>
 
-    <!-- User info dropdown (Pure Tailwind) -->
-    <!-- 
-    <div class="relative w-full border-t border-base-300">
-      <button id="userMenuBtn" class="flex items-center justify-start gap-2 w-full px-4 py-8 hover:bg-base-200
-           transition group-[.collapsed]:justify-center">
-        <div class="bg-neutral text-neutral-content rounded-full w-10 flex items-center justify-center">
-          <span class="text-lg font-semibold">ASH</span>
-        </div>
-        <div class="sidebar-text flex-grow text-left group-[.collapsed]:hidden">
-          <p class="font-medium text-base-content"><?= $currentUser['name'] ?? '' ?></p>
-          <p class="text-sm text-gray-500 dark:text-gray-400"><?= $currentUser['email'] ?? '' ?></p>
-        </div>
-      </button> -->
-
-    <!-- Dropdown (absolute when expanded, fixed when collapsed) -->
-    <!-- <div id="userMenu" class="hidden absolute bottom-full mb-2 right-2 w-56 bg-base-100 border border-base-300
-           rounded-xl shadow-lg z-[1000] transition-all duration-200
-           group-[.collapsed]:fixed group-[.collapsed]:left-[4.5rem] group-[.collapsed]:bottom-[1rem]
-           group-[.collapsed]:right-auto group-[.collapsed]:mb-0">
-        <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-base-200">
-          <i data-lucide="bell" class="w-4 h-4"></i> Notifications
-        </a>
-        <form method="post" action="/logout">
-          <button type="submit" class="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-base-200 w-full text-left">
-            <i data-lucide="log-out" class="w-4 h-4"></i> Logout
-          </button>
-        </form>
-      </div>
-    </div>
-
-    <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        const btn = document.getElementById('userMenuBtn');
-        const menu = document.getElementById('userMenu');
-
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          menu.classList.toggle('hidden');
-        });
-
-        document.addEventListener('click', (e) => {
-          if (!btn.contains(e.target) && !menu.contains(e.target)) {
-            menu.classList.add('hidden');
-          }
-        });
-      });
-    </script> -->
-
-    <!-- ---------------------------------------------- -->
-    <!-- inside sidebar.php: user info (keep label/button only) -->
+    <!-- User info dropdown-->
     <div id="user-info-root" class="relative w-full border-t border-base-300 pb-2">
       <button id="userMenuBtn" class="btn btn-ghost normal-case flex justify-start items-center gap-2 w-full px-4 py-8 hover:bg-base-200
            group-[.collapsed]:justify-center" aria-expanded="false" aria-controls="userMenu">
@@ -148,8 +99,8 @@
 
       <!-- Hidden template for the dropdown content. We'll portal this into body on open -->
       <template id="userMenuTemplate">
-        <ul id="userMenu" class="menu p-2 shadow border border-base-300 bg-base-100 rounded-box z-[2000] w-60" role="menu"
-          style="position:relative; display:block; visibility:hidden;">
+        <ul id="userMenu" class="menu p-2 shadow border border-base-300 bg-base-100/95 rounded-box z-[2000] w-60" role="menu"
+          style="position:fixed; display:block; visibility:hidden;">
           <li><a href="#" role="menuitem"><i data-lucide="bell" class="w-4 h-4 inline-block mr-2"></i>Notifications</a>
           </li>
           <li>

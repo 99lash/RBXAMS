@@ -1,5 +1,5 @@
 <?php if ($page != '/login'): ?>
-  <header class="border-b border-base-300 flex justify-between items-center px-4 py-3 sticky top-0">
+  <header class="border-b border-base-300 flex justify-between items-center px-4 py-3 sticky top-0 z-[1000] bg-base-100">
     <?php if ($page != '/404' && $page != '/404'): ?>
       <!-- Left: Sidebar toggle and breadcrumbs -->
       <div class="flex items-center gap-2">

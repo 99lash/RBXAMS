@@ -13,23 +13,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build CSS
-        run: npm run build:css
+      - name: Build CSS assets
+        run: |
+          npm ci
+          npm run build
 
       - name: Deploy via SSH
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.HOSTINGER_HOST }}
-          username: ${{ secrets.HOSTINGER_USER }}
-          key: ${{ secrets.HOSTINGER_SSH_KEY }}
-          port: ${{ secrets.HOSTINGER_PORT }}
-          source: ".,!node_modules,!tests,!README.md" # exclude unneeded files
-          target: ${{ secrets.REMOTE_PATH }}
+        uses: easingthemes/ssh-deploy@v4
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.HOSTINGER_HOST }}
+          REMOTE_USER: ${{ secrets.HOSTINGER_USER }}
+          REMOTE_PORT: ${{ secrets.HOSTINGER_PORT }}
+          REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
+          SOURCE: "."
+          EXCLUDE: "node_modules/, .git/, .github/, README.md"

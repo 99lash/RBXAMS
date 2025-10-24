@@ -4,25 +4,38 @@ on:
   push:
     branches:
       - main
+      # you can also auto-deploy dev if you like:
+      # - dev
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout your repository
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2️⃣ Setup Node.js (for Tailwind / DaisyUI build)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # 3️⃣ Install dependencies & build CSS
       - name: Build CSS assets
         run: |
           npm ci
           npm run build:css
 
+      # 4️⃣ Test SSH connectivity
       - name: Test connectivity
         run: |
-          ping -c 4 ${{ secrets.HOSTINGER_HOST }}
+          echo "Testing SSH connection..."
+          timeout 10s bash -c "ssh -p ${{ secrets.HOSTINGER_PORT }} -i /tmp/workflow_key -o StrictHostKeyChecking=no ${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }} 'echo ✅ SSH OK'"
 
-      - name: Deploy via SSH
+      # 5️⃣ Deploy via SSH
+      - name: Deploy to Hostinger
         uses: easingthemes/ssh-deploy@v4
         env:
           SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
@@ -30,5 +43,4 @@ jobs:
           REMOTE_USER: ${{ secrets.HOSTINGER_USER }}
           REMOTE_PORT: ${{ secrets.HOSTINGER_PORT }}
           REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
-          SOURCE: "."
-          EXCLUDE: "node_modules/, .git/, .github/, README.md"
+          SOURCE: ".,!node_modules/,!.git/,!.github/,!README.md"

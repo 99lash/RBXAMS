@@ -16,7 +16,7 @@ jobs:
       - name: Build CSS assets
         run: |
           npm ci
-          npm run build
+          npm run build:css
 
       - name: Deploy via SSH
         uses: easingthemes/ssh-deploy@v4

@@ -1,4 +1,4 @@
-name: Build and Deploy to Hostinger
+name: Build and Deploy to Hostinger via FTP
 
 on:
   push:
@@ -7,46 +7,37 @@ on:
 
 jobs:
   deploy:
+    name: 🚀 Build & Deploy
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout code
-      - name: Checkout code
+      - name: 🧾 Checkout code
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # 3️⃣ Install deps and build Tailwind/DaisyUI
-      - name: Build CSS assets
+      - name: 🏗️ Build CSS assets
         run: |
           npm ci
           npm run build:css
 
-      # 4️⃣ Setup SSH key for connectivity + deployment
-      - name: Setup SSH key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.HOSTINGER_SSH_KEY }}" > ~/.ssh/workflow_key
-          chmod 600 ~/.ssh/workflow_key
-          ssh-keyscan -p ${{ secrets.HOSTINGER_PORT }} ${{ secrets.HOSTINGER_HOST }} >> ~/.ssh/known_hosts
-
-      # 5️⃣ Test SSH connectivity
-      - name: Test SSH connection
-        run: |
-          echo "Testing SSH connection..."
-          ssh -p ${{ secrets.HOSTINGER_PORT }} -i ~/.ssh/workflow_key -o StrictHostKeyChecking=no ${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }} "echo ✅ SSH OK"
-
-      # 6️⃣ Deploy via SSH
-      - name: Deploy to Hostinger
-        uses: easingthemes/ssh-deploy@v4
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_KEY }}
-          REMOTE_HOST: ${{ secrets.HOSTINGER_HOST }}
-          REMOTE_USER: ${{ secrets.HOSTINGER_USER }}
-          REMOTE_PORT: ${{ secrets.HOSTINGER_PORT }}
-          REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
-          SOURCE: ".,!node_modules/,!.git/,!.github/,!README.md"
+      - name: 🚀 FTP Deploy
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.HOSTINGER_FTP_HOST }}
+          username: ${{ secrets.HOSTINGER_FTP_USER }}
+          password: ${{ secrets.HOSTINGER_FTP_PASS }}
+          protocol: ftps
+          port: 21
+          local-dir: ./public_html
+          server-dir: /home/u896434489/domains/rbxams.bscs3a.com/public_html
+          exclude: |
+            **/.git*
+            **/.github*
+            **/node_modules/**
+            **/package.json
+            **/package-lock.json
+            **/README.md

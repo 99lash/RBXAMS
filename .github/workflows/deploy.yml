@@ -4,37 +4,43 @@ on:
   push:
     branches:
       - main
-      # you can also auto-deploy dev if you like:
-      # - dev
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout your repository
+      # 1️⃣ Checkout code
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup Node.js (for Tailwind / DaisyUI build)
+      # 2️⃣ Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # 3️⃣ Install dependencies & build CSS
+      # 3️⃣ Install deps and build Tailwind/DaisyUI
       - name: Build CSS assets
         run: |
           npm ci
           npm run build:css
 
-      # 4️⃣ Test SSH connectivity
-      - name: Test connectivity
+      # 4️⃣ Setup SSH key for connectivity + deployment
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.HOSTINGER_SSH_KEY }}" > ~/.ssh/workflow_key
+          chmod 600 ~/.ssh/workflow_key
+          ssh-keyscan -p ${{ secrets.HOSTINGER_PORT }} ${{ secrets.HOSTINGER_HOST }} >> ~/.ssh/known_hosts
+
+      # 5️⃣ Test SSH connectivity
+      - name: Test SSH connection
         run: |
           echo "Testing SSH connection..."
-          timeout 10s bash -c "ssh -p ${{ secrets.HOSTINGER_PORT }} -i /tmp/workflow_key -o StrictHostKeyChecking=no ${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }} 'echo ✅ SSH OK'"
+          ssh -p ${{ secrets.HOSTINGER_PORT }} -i ~/.ssh/workflow_key -o StrictHostKeyChecking=no ${{ secrets.HOSTINGER_USER }}@${{ secrets.HOSTINGER_HOST }} "echo ✅ SSH OK"
 
-      # 5️⃣ Deploy via SSH
+      # 6️⃣ Deploy via SSH
       - name: Deploy to Hostinger
         uses: easingthemes/ssh-deploy@v4
         env:

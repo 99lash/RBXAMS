@@ -18,6 +18,10 @@ jobs:
           npm ci
           npm run build:css
 
+      - name: Test connectivity
+        run: |
+          ping -c 4 ${{ secrets.REMOTE_HOST }}
+
       - name: Deploy via SSH
         uses: easingthemes/ssh-deploy@v4
         env:

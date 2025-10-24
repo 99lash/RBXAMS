@@ -33,7 +33,7 @@ jobs:
           protocol: ftps
           port: 21
           local-dir: ./public_html/
-          server-dir: /home/u896434489/domains/rbxams.bscs3a.com/public_html/
+          server-dir: /
           exclude: |
             **/.git*
             **/.github*

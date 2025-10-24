@@ -32,8 +32,8 @@ jobs:
           password: ${{ secrets.HOSTINGER_FTP_PASS }}
           protocol: ftps
           port: 21
-          local-dir: ./public_html
-          server-dir: /home/u896434489/domains/rbxams.bscs3a.com/public_html
+          local-dir: ./public_html/
+          server-dir: /home/u896434489/domains/rbxams.bscs3a.com/public_html/
           exclude: |
             **/.git*
             **/.github*

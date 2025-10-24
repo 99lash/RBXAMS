@@ -59,10 +59,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const renderPagination = (pagination) => {
     const { total_items, per_page, current_page, last_page, from, to } = pagination;
 
-    if (last_page <= 1) {
-      paginationControls.innerHTML = '';
-      return;
-    }
+    // if (last_page <= 1) {
+    //   paginationControls.innerHTML = '';
+    //   return;
+    // }
 
     let html = `
       <div>

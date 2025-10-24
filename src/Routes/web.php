@@ -14,25 +14,25 @@ $router->get('/', 'HomeController@index');
  * @group /accounts 
  */
 
-require_once __DIR__ . './accountRoutes.php';
+require_once __DIR__ . '/accountRoutes.php';
 
 /** 
  * @group /summary 
  * 
  */
 
-require_once __DIR__ . './summaryRoutes.php';
+require_once __DIR__ . '/summaryRoutes.php';
 
 /** 
  * @group /auth 
  */
 
-require_once __DIR__ . './authRoutes.php';
+require_once __DIR__ . '/authRoutes.php';
 
 /** 
  * @group /users 
  */
-require_once __DIR__ . './userRoutes.php';
+require_once __DIR__ . '/userRoutes.php';
 
 /** 
  *  @method GET

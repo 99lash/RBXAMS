@@ -2,12 +2,15 @@
     RewriteEngine On
     RewriteBase /
 
-    # Protect system folders (just in case)
-    RedirectMatch 403 ^/(src|config|vendor|storage|resources|node_modules|docs)/.*
+    # Protect internal folders
+    RewriteRule ^(src|config|vendor|storage|resources|node_modules|docs)/(.*)$ - [F,L,NC]
 
-    # If file/folder does not exist, route to index.php
+    # Redirect all other requests to index.php
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^ index.php [L]
-    # RewriteRule ^(.*)$ index.php/$1 [L]
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    ErrorDocument 404 /index.php
 </IfModule>

@@ -38,11 +38,10 @@
     <!-- Image -->
     <img src="/assets/coins.jpeg" alt="Coins" class="rounded-xl shadow-md">
   </div>
-<?php else: ?>
+<?php elseif ($page != '/404' && $page != '/500'): ?>
   <!-- Default sidebar -->
-  <aside
-    class="sidebar bg-base-100 dark:bg-base-200 w-64 min-h-screen flex flex-col justify-between border-r border-base-300 transition-all duration-300 overflow-hidden"
-    id="sidebar">
+  <aside id="sidebar" class="group sidebar bg-base-100 dark:bg-base-200 w-64 min-h-screen flex flex-col justify-between
+    border-r border-base-300 transition-all duration-300 overflow-hidden">
 
     <div>
       <!-- Branding -->
@@ -83,20 +82,46 @@
       </nav>
     </div>
 
-    <!-- User info -->
-    <div class="p-4 border-t border-base-300 flex items-center gap-2">
-      <div class="avatar placeholder">
-        <div class="bg-neutral text-neutral-content rounded-full w-10 flex">
-          <span>AS</span>
+    <!-- User info dropdown-->
+    <div id="user-info-root" class="relative w-full p-4">
+      <button id="userMenuBtn" class="btn btn-ghost normal-case flex justify-start items-center gap-2 w-full px-4 py-8 rounded-full bg-base-300
+           group-[.collapsed]:justify-center
+           group-[.collapsed]:rounded-none
+           group-[.collapsed]:bg-transparent
+           group-[.collapsed]:border-none
+           group-[.collapsed]:shadow-none"
+           aria-expanded="false" aria-controls="userMenu">
+        <div class="avatar placeholder">
+          <div class="bg-neutral text-neutral-content rounded-full w-8 flex items-center justify-center">
+            <span class="text-lg">ASH</span>
+          </div>
         </div>
-      </div>
-      <div class="sidebar-text">
-        <p class="font-medium"><?= $currentUser['name'] ?? '' ?></p>
-        <p class="text-sm text-gray-500 dark:text-gray-400"><?= $currentUser['email'] ?? '' ?></p>
-      </div>
-      <form method="post" action="/logout">
-        <button type="submit" class="btn btn-primary btn-sm sidebar-text">Logout</button>
-      </form>
+        <div class="sidebar-text flex-grow text-left group-[.collapsed]:hidden">
+          <p class="font-medium text-base-content"><?= $currentUser['name'] ?? '' ?></p>
+          <p class="text-sm text-gray-500 dark:text-gray-400"><?= $currentUser['email'] ?? '' ?></p>
+        </div>
+      </button>
+
+      <!-- Hidden template for the dropdown content. We'll portal this into body on open -->
+      <template id="userMenuTemplate">
+        <ul id="userMenu" class="menu p-2 shadow border border-base-300 bg-base-100/95 rounded-box z-[2000] w-60"
+          role="menu" style="position:fixed; display:block; visibility:hidden;">
+          <li><a href="#" role="menuitem"><i data-lucide="bell" class="w-4 h-4 inline-block mr-2"></i>Notifications</a>
+          </li>
+          <li>
+            <form method="post" action="/logout" class="w-full">
+              <button type="submit" class="flex items-center gap-2 w-full text-left" role="menuitem">
+                <i data-lucide="log-out" class="w-4 h-4 inline-block mr-2"></i>Logout
+              </button>
+            </form>
+          </li>
+        </ul>
+      </template>
     </div>
+
+    <!-- <script>
+     
+    </script> -->
+
   </aside>
 <?php endif; ?>

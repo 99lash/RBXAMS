@@ -28,18 +28,18 @@ class SummaryController
     require __DIR__ . '/../Views/index.php';
   }
 
-    public function getSummaryData()
-    {
-        $period = $_GET['period'] ?? 'today';
-        $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-        $limit = isset($_GET['limit']) ? (int)$_GET['limit'] : 10; // Default limit of 10
+  public function getSummaryData()
+  {
+    $period = $_GET['period'] ?? 'today';
+    $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+    $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 10; // Default limit of 10
 
-        $paginatedResult = $this->summaryService->getSummaries($period, $page, $limit);
-
-        header('Content-Type: application/json');
-        echo json_encode($paginatedResult);
-        exit;
-    }
+    $paginatedResult = $this->summaryService->getSummaries($period, $page, $limit);
+    
+    header('Content-Type: application/json');
+    echo json_encode($paginatedResult);
+    exit;
+  }
 
   public function exportCsv()
   {
@@ -55,10 +55,18 @@ class SummaryController
     // Add header row
     fputcsv($output, [
       'Date',
-      'Pending Robux Bought', 'Fastflip Robux Bought', 'Total Robux Bought',
-      'Pending Robux Sold', 'Fastflip Robux Sold', 'Total Robux Sold',
-      'Pending Expenses (PHP)', 'Fastflip Expenses (PHP)', 'Total Expenses (PHP)',
-      'Pending Profit (PHP)', 'Fastflip Profit (PHP)', 'Total Profit (PHP)'
+      'Pending Robux Bought',
+      'Fastflip Robux Bought',
+      'Total Robux Bought',
+      'Pending Robux Sold',
+      'Fastflip Robux Sold',
+      'Total Robux Sold',
+      'Pending Expenses (PHP)',
+      'Fastflip Expenses (PHP)',
+      'Total Expenses (PHP)',
+      'Pending Profit (PHP)',
+      'Fastflip Profit (PHP)',
+      'Total Profit (PHP)'
     ]);
 
     // Add data rows
@@ -87,19 +95,19 @@ class SummaryController
   public function exportPdf()
   {
     try {
-        $period = $_GET['period'] ?? 'all';
-        $pdfContent = $this->summaryService->generatePdfForPeriod($period);
+      $period = $_GET['period'] ?? 'all';
+      $pdfContent = $this->summaryService->generatePdfForPeriod($period);
 
-        header('Content-Type: application/pdf');
-        header('Content-Disposition: attachment; filename="RBXAMS_Summary_' . $period . '_' . date('Y-m-d') . '.pdf"');
-        
-        echo $pdfContent;
-        exit;
+      header('Content-Type: application/pdf');
+      header('Content-Disposition: attachment; filename="RBXAMS_Summary_' . $period . '_' . date('Y-m-d') . '.pdf"');
+
+      echo $pdfContent;
+      exit;
     } catch (\Throwable $e) {
-        // Fallback for any unexpected errors in the service
-        header('Content-Type: text/plain');
-        echo 'An unexpected error occurred while generating the PDF: ' . $e->getMessage();
-        exit;
+      // Fallback for any unexpected errors in the service
+      header('Content-Type: text/plain');
+      echo 'An unexpected error occurred while generating the PDF: ' . $e->getMessage();
+      exit;
     }
   }
 }

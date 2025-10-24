@@ -20,7 +20,7 @@ jobs:
 
       - name: Test connectivity
         run: |
-          ping -c 4 ${{ secrets.REMOTE_HOST }}
+          ping -c 4 ${{ secrets.HOSTINGER_HOST }}
 
       - name: Deploy via SSH
         uses: easingthemes/ssh-deploy@v4

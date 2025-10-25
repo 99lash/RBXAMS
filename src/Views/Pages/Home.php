@@ -1,19 +1,18 @@
 <div class="p-6">
 	<!-- Install Banner -->
-	<div class="bg-gray-800 p-4 rounded-lg flex justify-between items-center mb-6">
+	<div class="bg-primary/10 border border-primary p-4 rounded-lg flex justify-between items-center mb-6">
 		<div class="flex items-center gap-4">
-			<div class="bg-gray-700 p-2 rounded-full">
-				<span class="font-bold text-white">R</span>
+			<div class="p-2 border border-dotted border-primary rounded-lg">
+        <i data-lucide="line-chart" class="w-6 h-6 text-primary"></i>
 			</div>
 			<div>
-				<h3 class="font-bold text-white text-base sm:text-lg">Install RBXAMS</h3>
-				<p class="text-gray-400 text-xs sm:text-sm">Get quick access to your Roblox Asset Monitoring System. Install it
+				<h3 class="font-bold text-primary text-base sm:text-lg">Install RBXAMS</h3>
+				<p class="text-info0 text-xs sm:text-sm">Get quick access to your Roblox Asset Monitoring System. Install it
 					as an app for a better experience!</p>
 			</div>
 		</div>
 		<div class="flex items-center gap-2">
 			<button class="btn btn-sm btn-primary">Install App</button>
-			<button class="btn btn-sm btn-ghost">&times;</button>
 		</div>
 	</div>
 
@@ -30,7 +29,7 @@
 				<li><a>Today</a></li>
 				<li><a>This Week</a></li>
 				<li><a>This Month</a></li>
-				<li><a>Last Month</a></li>
+				<li><a>Last Quarter</a></li>
 				<li><a>This Year</a></li>
 				<li><a>All Time</a></li>
 			</ul>

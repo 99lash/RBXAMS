@@ -33,8 +33,8 @@
     <div class="flex items-center gap-4">
       <!-- Theme toggle -->
       <div class="dropdown dropdown-end">
-        <label tabindex="0" class="btn btn-sm btn-ghost">
-          <i data-lucide="sun" class="w-4 h-4"></i>
+        <label tabindex="0" class="btn btn-sm bg-base-500 border-1 border-base-300">
+          <i id="theme-icon" data-lucide="sun" class="w-4 h-4"></i>
         </label>
         <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-200 rounded-box w-40">
           <li class="theme-option" data-name="light">

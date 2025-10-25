@@ -161,7 +161,7 @@
 
     <!-- FAQ (hidden initially) -->
     <div id="content-faq" class="tab-content hidden">
-      <div class="bg-base-100 p-6 rounded-xl shadow border">
+      <div class="bg-base-100 p-6 rounded-xl shadow">
         <div class="collapse collapse-arrow bg-base-200 mb-2">
           <input type="radio" name="my-accordion-4" checked="checked" />
           <div class="collapse-title text-xl font-medium">

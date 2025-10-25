@@ -93,12 +93,12 @@
            aria-expanded="false" aria-controls="userMenu">
         <div class="avatar placeholder">
           <div class="bg-neutral text-neutral-content rounded-full w-8 flex items-center justify-center">
-            <span class="text-lg">ASH</span>
+            <span class="text-sm">ASH</span>
           </div>
         </div>
         <div class="sidebar-text flex-grow text-left group-[.collapsed]:hidden">
-          <p class="font-medium text-base-content"><?= $currentUser['name'] ?? '' ?></p>
-          <p class="text-sm text-gray-500 dark:text-gray-400"><?= $currentUser['email'] ?? '' ?></p>
+          <p class="text-xs base-content"><?= $currentUser['name'] ?? '' ?></p>
+          <p class="text-xs text-gray-500 dark:text-gray-400"><?= $currentUser['email'] ?? '' ?></p>
         </div>
       </button>
 

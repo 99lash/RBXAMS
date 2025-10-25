@@ -84,7 +84,7 @@
           <label class="label">
             <span class="label-text">Roblox Account Cookies (one per line)</span>
           </label>
-          <textarea name="cookies" class="textarea textarea-bordered h-32" placeholder="_ROBLOSECURITY=...\n_ROBLOSECURITY=..."></textarea>
+          <textarea name="cookies" class="textarea textarea-bordered h-32 w-full" placeholder="<?= "Cookie1\nCookie2\nCookie3\n..."?>"></textarea>
         </div>
         <div class="modal-action">
           <button type="submit" class="btn btn-primary">Add Account(s)</button>

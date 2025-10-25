@@ -103,6 +103,7 @@ if (property_exists($this, 'currentUser')) {
     </div>
   </div>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="/scripts/index.js"></script>
 </body>
 

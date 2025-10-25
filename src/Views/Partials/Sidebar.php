@@ -109,8 +109,8 @@
           <li><a href="#" role="menuitem"><i data-lucide="bell" class="w-4 h-4 inline-block mr-2"></i>Notifications</a>
           </li>
           <li>
-            <form method="post" action="/logout" class="w-full">
-              <button type="submit" class="flex items-center gap-2 w-full text-left" role="menuitem">
+            <form method="POST" action="/logout" class="w-full flex">
+              <button type="submit" class="flex flex-1 items-center gap-2" role="menuitem">
                 <i data-lucide="log-out" class="w-4 h-4 inline-block mr-2"></i>Logout
               </button>
             </form>

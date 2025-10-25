@@ -207,4 +207,60 @@ class SummaryService
         // Return the PDF content as a string
         return $dompdf->output();
     }
+
+    public function getDashboardData(string $period = 'today')
+    {
+        $today = new DateTime();
+        $startDate = $today->format('Y-m-d');
+        $endDate = $today->format('Y-m-d');
+
+        switch ($period) {
+            case 'week':
+                $startDate = $today->modify('monday this week')->format('Y-m-d');
+                $endDate = $today->modify('sunday this week')->format('Y-m-d');
+                break;
+            case 'month':
+                $startDate = $today->modify('first day of this month')->format('Y-m-d');
+                $endDate = $today->modify('last day of this month')->format('Y-m-d');
+                break;
+            case 'quarter':
+                $month = $today->format('n');
+                $year = $today->format('Y');
+                if ($month <= 3) {
+                    $startDate = "$year-01-01";
+                    $endDate = "$year-03-31";
+                } elseif ($month <= 6) {
+                    $startDate = "$year-04-01";
+                    $endDate = "$year-06-30";
+                } elseif ($month <= 9) {
+                    $startDate = "$year-07-01";
+                    $endDate = "$year-09-30";
+                } else {
+                    $startDate = "$year-10-01";
+                    $endDate = "$year-12-31";
+                }
+                break;
+            case 'year':
+                $year = $today->format('Y');
+                $startDate = "$year-01-01";
+                $endDate = "$year-12-31";
+                break;
+            case 'all':
+                $startDate = '1970-01-01';
+                $endDate = $today->format('Y-m-d');
+                break;
+        }
+
+        $summary = $this->summaryRepo->getAggregatedSummary($startDate, $endDate);
+
+        $accountRepo = new \App\Repositories\AccountRepository();
+        $accountTypeDistribution = $accountRepo->getAccountTypeDistribution();
+        $accountStatusDistribution = $accountRepo->getAccountStatusDistribution();
+
+        return [
+            'summary' => $summary,
+            'accountTypeDistribution' => $accountTypeDistribution,
+            'accountStatusDistribution' => $accountStatusDistribution
+        ];
+    }
 }

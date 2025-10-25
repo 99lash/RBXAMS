@@ -30,3 +30,10 @@ $summaryRouter->get('/summary/csv', 'SummaryController@exportCsv');
  *  @desc   Export daily activity summary as PDF
  */
 $summaryRouter->get('/summary/pdf', 'SummaryController@exportPdf');
+
+/** 
+ *  @method GET
+ *  @route  /api/dashboard
+ *  @desc   Get dashboard data for JS frontend
+ */
+$summaryRouter->get('/api/dashboard', 'SummaryController@getDashboardData');

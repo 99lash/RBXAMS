@@ -43,12 +43,12 @@ if (property_exists($this, 'currentUser')) {
 
 <body>
 
-  <div class="min-h-[90vh] flex transition-all duration-300" id="app">
+  <div class="h-screen flex transition-all duration-300 overflow-hidden" id="app">
     <!-- Sidebar -->
     <?php
     require_once 'Partials/Sidebar.php';
     ?>
-    <div class="flex-1 min-w-0" id="main-container">
+    <div class="flex-1 min-w-0 overflow-y-auto" id="main-container">
       <!-- Header -->
       <?php
       require_once 'Partials/Header.php';

@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use App\Security\AuthManager;
 use App\Services\UserService;
-use App\Services\AuthService;
+// use App\Services\AuthService;
 
 class UserController
 {
@@ -15,8 +15,8 @@ class UserController
   public function __construct()
   {
     $this->service = new UserService();
-    // $this->authManager = new AuthManager();
-    // $this->currentUser = $this->authManager->requireAuth();
+    $this->authManager = new AuthManager();
+    $this->currentUser = $this->authManager->requireAuth();
   }
   public function listAll()
   {

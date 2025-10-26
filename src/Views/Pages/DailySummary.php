@@ -12,12 +12,12 @@
           <i data-lucide="chevron-down" class="w-4 h-4"></i>
         </label>
         <ul tabindex="0" id="period-options" class="dropdown-content menu p-2 shadow bg-base-200 rounded-box w-40">
-          <li><a data-period="all">All Time</a></li>
-          <li><a data-period="year">This Year</a></li>
-          <li><a data-period="quarter">This Quarter</a></li>
-          <li><a data-period="month">This Month</a></li>
-          <li><a data-period="week">This Week</a></li>
           <li><a data-period="today">Today</a></li>
+          <li><a data-period="week">This Week</a></li>
+          <li><a data-period="month">This Month</a></li>
+          <li><a data-period="quarter">This Quarter</a></li>
+          <li><a data-period="year">This Year</a></li>
+          <li><a data-period="all">All Time</a></li>
         </ul>
       </div>
       <a id="export-csv" class="btn btn-outline" href="/summary/csv?period=all">
@@ -90,8 +90,8 @@
             </tr>
           </thead>
           <tbody id="summary-table-body">
-        
-        </tbody>
+
+          </tbody>
         </table>
       </div>
       <div id="pagination-controls" class="flex justify-between items-center mt-4">

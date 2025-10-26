@@ -303,4 +303,33 @@ class AccountRepository
     $stmt->bind_param($types, ...$params);
     return $stmt->execute();
   }
+
+  public function getAccountTypeDistribution(): array
+  {
+    $query = "
+        SELECT 
+            account_type, 
+            COUNT(*) as count
+        FROM accounts 
+        WHERE deleted_at IS NULL
+        GROUP BY account_type
+    ";
+    $result = $this->mysqli->query($query);
+    return $result->fetch_all(MYSQLI_ASSOC);
+  }
+
+  public function getAccountStatusDistribution(): array
+  {
+    $query = "
+        SELECT 
+            s.name as status, 
+            COUNT(a.id) as count
+        FROM accounts as a
+        JOIN account_status as s ON a.account_status_id = s.id
+        WHERE a.deleted_at IS NULL
+        GROUP BY s.name
+    ";
+    $result = $this->mysqli->query($query);
+    return $result->fetch_all(MYSQLI_ASSOC);
+  }
 }

@@ -156,4 +156,26 @@ class SummaryRepository
             'total' => $total
         ];
     }
+
+    public function getAggregatedSummary(string $startDate, string $endDate): array
+    {
+        $stmt = $this->mysqli->prepare("
+            SELECT 
+                SUM(pending_robux_bought) as total_pending_robux_bought,
+                SUM(fastflip_robux_bought) as total_fastflip_robux_bought,
+                SUM(pending_robux_sold) as total_pending_robux_sold,
+                SUM(fastflip_robux_sold) as total_fastflip_robux_sold,
+                SUM(pending_expenses_php) as total_pending_expenses_php,
+                SUM(fastflip_expenses_php) as total_fastflip_expenses_php,
+                SUM(pending_profit_php) as total_pending_profit_php,
+                SUM(fastflip_profit_php) as total_fastflip_profit_php
+            FROM daily_summary 
+            WHERE summary_date BETWEEN ? AND ?
+        ");
+        $stmt->bind_param('ss', $startDate, $endDate);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();
+
+        return $result ?? [];
+    }
 }

@@ -110,4 +110,13 @@ class SummaryController
       exit;
     }
   }
+
+  public function getDashboardData()
+  {
+    $period = $_GET['period'] ?? 'today';
+    $data = $this->summaryService->getDashboardData($period);
+    header('Content-Type: application/json');
+    echo json_encode($data);
+    exit;
+  }
 }

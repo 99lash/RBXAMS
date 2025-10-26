@@ -11,20 +11,37 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout the repository
       - name: 🧾 Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      # 2️⃣ Setup PHP for Composer
+      - name: ⚙️ Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, bcmath, intl, pdo, pdo_mysql, curl, dom, gd, json, xml
+          coverage: none
+
+      # 3️⃣ Install Composer dependencies
+      - name: 📦 Install PHP dependencies
+        run: |
+          composer install --no-dev --optimize-autoloader --no-interaction
+
+      # 4️⃣ Setup Node.js for Tailwind/DaisyUI
+      - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      - name: 🏗️ Build CSS assets
+      # 5️⃣ Build frontend CSS (Tailwind + DaisyUI)
+      - name: 🎨 Build frontend assets
         run: |
           npm ci
           npm run build:css
 
-      - name: 🚀 FTP Deploy
+      # 6️⃣ Deploy everything via FTP (full project)
+      - name: 🚀 Deploy full project to Hostinger
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.HOSTINGER_FTP_HOST }}
@@ -32,12 +49,14 @@ jobs:
           password: ${{ secrets.HOSTINGER_FTP_PASS }}
           protocol: ftps
           port: 21
-          local-dir: ./public_html/
+          local-dir: ./
           server-dir: /
           exclude: |
             **/.git*
             **/.github*
             **/node_modules/**
-            **/package.json
-            **/package-lock.json
+            **/vendor/**
+            **/storage/**
+            **/tests/**
             **/README.md
+            **/deploy.yml

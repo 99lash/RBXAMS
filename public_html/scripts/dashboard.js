@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
 				throw new Error('Network response was not ok');
 			}
 			const data = await response.json();
+			// console.log(data);
 			updateDashboard(data);
 		} catch (error) {
 			console.error('Failed to fetch dashboard data:', error);
@@ -92,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			total_pending_expenses_php, total_fastflip_expenses_php
 		} = summary;
 
-		profitChart.data.labels = ['Pending', 'Fastflip'];
+		profitChart.data.labels = ['Pending Accounts', 'Fastflip Accounts'];
 		profitChart.data.datasets = [
 			{
 				label: 'Profit',
@@ -114,9 +115,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	const updateTypeChart = (dist) => {
 		if (!typeChart) return;
-		const labels = dist.map(item => item.account_type);
+		// const labels = dist.map(item => item.account_type);
 		const data = dist.map(item => item.count);
-		typeChart.data.labels = labels;
+		typeChart.data.labels = ['Fastflip Accounts', 'Pending Accounts'];
+		/* 
+			it should be display the two types of accounts even if it's zero by count.
+			This is hard because I don't have account_type table to get all the types. But we have a fixed type of accounts: Fastflip and Pending
+		*/
 		typeChart.data.datasets = [{
 			label: 'Account Type',
 			data: data,
@@ -132,6 +137,10 @@ document.addEventListener('DOMContentLoaded', () => {
 		const labels = dist.map(item => item.status);
 		const data = dist.map(item => item.count);
 		statusChart.data.labels = labels;
+		/* 
+			it should be display all the status of accounts even if it's zero by count.
+			This is easy because we have account_status table to get all the account_status
+		*/
 		statusChart.data.datasets = [{
 			label: 'Account Status',
 			data: data,

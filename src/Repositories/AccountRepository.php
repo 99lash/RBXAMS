@@ -307,12 +307,21 @@ class AccountRepository
   public function getAccountTypeDistribution(): array
   {
     $query = "
-        SELECT 
-            account_type, 
-            COUNT(*) as count
-        FROM accounts 
-        WHERE deleted_at IS NULL
-        GROUP BY account_type
+        SELECT
+            types.account_type,
+            COUNT(a.id) AS count
+        FROM
+            (
+                SELECT 1 AS ord, 'Fastflip' AS account_type
+                UNION ALL
+                SELECT 2 AS ord, 'Pending' AS account_type
+            ) AS types
+        LEFT JOIN
+            accounts AS a ON types.account_type = a.account_type AND a.deleted_at IS NULL
+        GROUP BY
+            types.account_type, types.ord
+        ORDER BY
+            types.ord
     ";
     $result = $this->mysqli->query($query);
     return $result->fetch_all(MYSQLI_ASSOC);
@@ -324,10 +333,10 @@ class AccountRepository
         SELECT 
             s.name as status, 
             COUNT(a.id) as count
-        FROM accounts as a
-        JOIN account_status as s ON a.account_status_id = s.id
-        WHERE a.deleted_at IS NULL
+        FROM account_status as s
+        LEFT JOIN accounts as a ON s.id = a.account_status_id AND a.deleted_at IS NULL
         GROUP BY s.name
+        ORDER BY s.id
     ";
     $result = $this->mysqli->query($query);
     return $result->fetch_all(MYSQLI_ASSOC);

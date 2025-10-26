@@ -29,11 +29,24 @@ class AccountService
     $this->summaryService = $summaryService ?? new SummaryService();
   }
 
-  public function getAllAccounts(?string $sortBy = null, ?string $sortOrder = null)
+  public function getAllAccounts(?string $sortBy = null, ?string $sortOrder = null, int $page = 1, int $perPage = 10): array
   {
-    $results = $this->accountRepo->findAll($sortBy, $sortOrder);
-    // return AccountTransformer::transform($results);
-    return AccountTransformer::transformCollection($results);
+    $results = $this->accountRepo->findAll($sortBy, $sortOrder, $page, $perPage);
+    $totalCount = $this->accountRepo->getTotalCount();
+    
+    $transformedAccounts = AccountTransformer::transformCollection($results);
+    
+    return [
+      'accounts' => $transformedAccounts,
+      'pagination' => [
+        'current_page' => $page,
+        'per_page' => $perPage,
+        'total' => $totalCount,
+        'total_pages' => ceil($totalCount / $perPage),
+        'has_next_page' => $page < ceil($totalCount / $perPage),
+        'has_previous_page' => $page > 1
+      ]
+    ];
   }
 
   public function create(array $data): bool

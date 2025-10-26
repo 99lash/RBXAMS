@@ -36,6 +36,13 @@
           <option value="Retrieved">Retrieved</option>
         </select>
 
+        <select id="per-page-select" class="select select-bordered w-full md:w-auto">
+          <option value="10">10 per page</option>
+          <option value="25">25 per page</option>
+          <option value="50">50 per page</option>
+          <option value="100">100 per page</option>
+        </select>
+
         <button id="bulk-update-btn" class="btn btn-outline w-full md:w-auto">Bulk Update</button>
         <button id="bulk-delete-btn" class="btn btn-error btn-outline w-full md:w-auto">Bulk Delete</button>
       </div>
@@ -67,7 +74,10 @@
           </tbody>
         </table>
       </div>
-      <div class="flex justify-center mt-4">
+      <div class="flex flex-col md:flex-row justify-between items-center mt-4 gap-4">
+        <div id="pagination-info" class="text-sm text-base-content/70">
+          <!-- Pagination info will be displayed here -->
+        </div>
         <div class="join" id="pagination-controls">
           <!-- Pagination will be dynamically loaded here -->
         </div>

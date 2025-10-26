@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const accountTabs = document.querySelectorAll('.tabs .tab');
   const searchInput = document.getElementById('search-input');
   const statusFilter = document.getElementById('status-filter');
+  const perPageSelect = document.getElementById('per-page-select');
   const selectAllCheckbox = document.getElementById('select-all-accounts');
   const bulkUpdateBtn = document.getElementById('bulk-update-btn');
   const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
@@ -22,13 +23,14 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- State ---
   let allAccounts = [];
   let filteredAccounts = [];
+  let paginationData = null;
   let currentAccountType = 'pending'; // 'pending' or 'fastflip'
   let currentSearchTerm = '';
   let currentStatusFilter = 'all';
   let currentSortBy = 'name';
   let currentSortOrder = 'asc';
   let currentPage = 1;
-  const itemsPerPage = 10; // For client-side pagination if needed
+  let itemsPerPage = 10; // Server-side pagination (now dynamic)
 
   // --- Utility Functions ---
   const formatCurrency = (value) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(value);
@@ -74,11 +76,18 @@ document.addEventListener('DOMContentLoaded', () => {
         params.append('sort_by', currentSortBy);
         params.append('sort_order', currentSortOrder);
       }
+      params.append('page', currentPage);
+      params.append('per_page', itemsPerPage);
+      
       const response = await fetch(`/api/accounts?${params.toString()}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      allAccounts = await response.json();
+      
+      const data = await response.json();
+      allAccounts = data.accounts || [];
+      paginationData = data.pagination || null;
+      
       applyFiltersAndRender();
     } catch (error) {
       console.error("Failed to fetch accounts:", error);
@@ -96,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return currentAccountType === 'pending' ? type === 'pending' : type !== 'pending';
     });
 
-    // Search
+    // Search (client-side filter)
     if (currentSearchTerm) {
       const searchTermLower = currentSearchTerm.toLowerCase();
       accountsToRender = accountsToRender.filter(account =>
@@ -105,13 +114,14 @@ document.addEventListener('DOMContentLoaded', () => {
       );
     }
 
-    // Status Filter
+    // Status Filter (client-side filter)
     if (currentStatusFilter !== 'all') {
       accountsToRender = accountsToRender.filter(account => account.status === currentStatusFilter);
     }
 
     filteredAccounts = accountsToRender;
     renderAccounts(filteredAccounts);
+    renderPagination();
     updateCounts();
   };
 
@@ -154,6 +164,100 @@ document.addEventListener('DOMContentLoaded', () => {
     lucide.createIcons(); // Re-render lucide icons for new elements
   };
 
+  const renderPagination = () => {
+    paginationControls.innerHTML = '';
+    
+    if (!paginationData || paginationData.total_pages <= 1) {
+      // Update pagination info even if no pagination controls
+      updatePaginationInfo();
+      return;
+    }
+
+    const pagination = paginationData;
+    
+    // Previous button
+    if (pagination.has_previous_page) {
+      const prevBtn = document.createElement('button');
+      prevBtn.className = 'join-item btn btn-outline';
+      prevBtn.innerHTML = '« Previous';
+      prevBtn.addEventListener('click', () => changePage(currentPage - 1));
+      paginationControls.appendChild(prevBtn);
+    }
+
+    // Page number buttons
+    const startPage = Math.max(1, currentPage - 2);
+    const endPage = Math.min(pagination.total_pages, currentPage + 2);
+
+    // First page if not visible
+    if (startPage > 1) {
+      const firstBtn = document.createElement('button');
+      firstBtn.className = 'join-item btn btn-outline';
+      firstBtn.textContent = '1';
+      firstBtn.addEventListener('click', () => changePage(1));
+      paginationControls.appendChild(firstBtn);
+      
+      if (startPage > 2) {
+        const ellipsis = document.createElement('button');
+        ellipsis.className = 'join-item btn btn-disabled';
+        ellipsis.textContent = '...';
+        paginationControls.appendChild(ellipsis);
+      }
+    }
+
+    // Page number buttons in range
+    for (let i = startPage; i <= endPage; i++) {
+      const pageBtn = document.createElement('button');
+      pageBtn.className = `join-item btn ${i === currentPage ? 'btn-active' : 'btn-outline'}`;
+      pageBtn.textContent = i;
+      pageBtn.addEventListener('click', () => changePage(i));
+      paginationControls.appendChild(pageBtn);
+    }
+
+    // Last page if not visible
+    if (endPage < pagination.total_pages) {
+      if (endPage < pagination.total_pages - 1) {
+        const ellipsis = document.createElement('button');
+        ellipsis.className = 'join-item btn btn-disabled';
+        ellipsis.textContent = '...';
+        paginationControls.appendChild(ellipsis);
+      }
+      
+      const lastBtn = document.createElement('button');
+      lastBtn.className = 'join-item btn btn-outline';
+      lastBtn.textContent = pagination.total_pages;
+      lastBtn.addEventListener('click', () => changePage(pagination.total_pages));
+      paginationControls.appendChild(lastBtn);
+    }
+
+    // Next button
+    if (pagination.has_next_page) {
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'join-item btn btn-outline';
+      nextBtn.innerHTML = 'Next »';
+      nextBtn.addEventListener('click', () => changePage(currentPage + 1));
+      paginationControls.appendChild(nextBtn);
+    }
+
+    // Update pagination info
+    updatePaginationInfo();
+  };
+
+  const updatePaginationInfo = () => {
+    const paginationInfo = document.getElementById('pagination-info');
+    if (paginationData) {
+      const startItem = ((currentPage - 1) * paginationData.per_page) + 1;
+      const endItem = Math.min(currentPage * paginationData.per_page, paginationData.total);
+      paginationInfo.textContent = `Showing ${startItem}-${endItem} of ${paginationData.total} accounts`;
+    } else {
+      paginationInfo.textContent = '';
+    }
+  };
+
+  const changePage = (page) => {
+    currentPage = page;
+    fetchAccounts();
+  };
+
   const updateCounts = () => {
     const pendingAccounts = allAccounts.filter(acc => acc.account_type.toLowerCase() === 'pending');
     const fastflipAccounts = allAccounts.filter(acc => acc.account_type.toLowerCase() !== 'pending');
@@ -174,6 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
         currentSortBy = sortBy;
         currentSortOrder = 'asc';
       }
+      currentPage = 1; // Reset to first page when sorting
       // Update header icons
       sortableHeaders.forEach(icon => {
         icon.dataset.lucide = 'arrow-down-up';
@@ -201,6 +306,12 @@ document.addEventListener('DOMContentLoaded', () => {
   statusFilter.addEventListener('change', (e) => {
     currentStatusFilter = e.target.value;
     applyFiltersAndRender();
+  });
+
+  perPageSelect.addEventListener('change', (e) => {
+    itemsPerPage = parseInt(e.target.value);
+    currentPage = 1; // Reset to first page when changing items per page
+    fetchAccounts();
   });
 
   selectAllCheckbox.addEventListener('change', (e) => {

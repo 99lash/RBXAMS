@@ -29,10 +29,16 @@ class AccountController
   public function getAccountsJson()
   {
     header('Content-Type: application/json');
+    
+    // Get pagination parameters with defaults
+    $page = max(1, intval($_GET['page'] ?? 1));
+    $perPage = max(1, min(100, intval($_GET['per_page'] ?? 10))); // Limit between 1-100
+    
     $sortBy = $_GET['sort_by'] ?? null;
     $sortOrder = $_GET['sort_order'] ?? 'asc'; // Default to ascending
-    $accounts = $this->accountService->getAllAccounts($sortBy, $sortOrder);
-    echo json_encode($accounts);
+    
+    $accountsData = $this->accountService->getAllAccounts($sortBy, $sortOrder, $page, $perPage);
+    echo json_encode($accountsData);
     exit;
   }
 

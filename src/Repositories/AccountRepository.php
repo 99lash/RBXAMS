@@ -16,7 +16,7 @@ class AccountRepository
     $this->mysqli = (new Database())->getConnection();
   }
 
-  public function findAll(?string $sortBy = null, ?string $sortOrder = null): array
+  public function findAll(?string $sortBy = null, ?string $sortOrder = null, int $page = 1, int $perPage = 10): array
   {
     $results = [];
     $accountsData = [];
@@ -36,6 +36,9 @@ class AccountRepository
 
       $orderBy = " ORDER BY {$dbSortBy} {$sortOrder}";
     }
+
+    // Calculate offset for pagination
+    $offset = ($page - 1) * $perPage;
 
     $query = "
     SELECT
@@ -59,16 +62,27 @@ class AccountRepository
     LEFT JOIN account_status AS s 
     ON a.account_status_id = s.id
     WHERE a.deleted_at IS NULL
-    " . $orderBy;
+    " . $orderBy . "
+    LIMIT ? OFFSET ?";
 
-    $result = $this->mysqli->query($query);
+    $stmt = $this->mysqli->prepare($query);
+    if (!$stmt) {
+      error_log('FindAll prepare failed: ' . $this->mysqli->error);
+      return [];
+    }
+
+    $stmt->bind_param("ii", $perPage, $offset);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
     if (!$result) {
-      error_log('FindAll query failed: ' . $this->mysqli->error);
+      error_log('FindAll query execution failed: ' . $this->mysqli->error);
       return [];
     }
 
     $accountsData = $result->fetch_all(MYSQLI_ASSOC);
     $result->free();
+    $stmt->close();
 
     foreach ($accountsData as $data) {
       $account = AccountModel::fromArray($data);
@@ -79,6 +93,26 @@ class AccountRepository
       ];
     }
     return $results;
+  }
+
+  public function getTotalCount(): int
+  {
+    $query = "
+      SELECT COUNT(*) as total
+      FROM accounts 
+      WHERE deleted_at IS NULL
+    ";
+    
+    $result = $this->mysqli->query($query);
+    if (!$result) {
+      error_log('GetTotalCount query failed: ' . $this->mysqli->error);
+      return 0;
+    }
+    
+    $row = $result->fetch_assoc();
+    $result->free();
+    
+    return (int) $row['total'];
   }
 
   public function findALlExisting()

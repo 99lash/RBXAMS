@@ -15,6 +15,7 @@ class Database
 
   public function __construct()
   {
+    date_default_timezone_set('Asia/Manila');
     if (isset($_ENV['ENV_MODE']) && $_ENV['ENV_MODE'] === 'prod') {
       $this->host = $_ENV['DB_HOST'];
       $this->db = $_ENV['DB_NAME'];

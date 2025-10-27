@@ -253,11 +253,19 @@ class AccountModel extends HeroModel
     $this->sold_rate_usd = $sold_rate_usd;
     return $this;
   }
-  public function setUnpendDate(DateTimeImmutable $unpend_date): self
+  public function setUnpendDate(string|\DateTimeImmutable|null $unpend_date): self
   {
+    if (is_string($unpend_date)) {
+      if (empty($unpend_date)) {
+        $this->unpend_date = null;
+        return $this;
+      }
+      $unpend_date = new \DateTimeImmutable($unpend_date);
+    }
     $this->unpend_date = $unpend_date;
     return $this;
   }
+
   public function setSoldDate(DateTimeImmutable $sold_date): self
   {
     $this->sold_date = $sold_date;

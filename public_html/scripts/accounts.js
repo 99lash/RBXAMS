@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let currentSortOrder = 'asc';
   let currentPage = 1;
   const itemsPerPage = 10; // For client-side pagination if needed
+  let currentUsdToPhpRate = 57; // Fallback rate
 
   // --- Utility Functions ---
   const formatCurrency = (value) => new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(value);
@@ -68,6 +69,22 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // --- Data Fetching & Rendering ---
+  const fetchExchangeRate = async () => {
+    try {
+      const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+      if (!response.ok) {
+        throw new Error('Failed to fetch exchange rate');
+      }
+      const data = await response.json();
+      if (data && data.rates && data.rates.PHP) {
+        currentUsdToPhpRate = data.rates.PHP;
+      }
+    } catch (error) {
+      console.error('Error fetching exchange rate:', error);
+      // Fallback rate is already set
+    }
+  };
+
   const fetchAccounts = async () => {
     const colspanCount = currentAccountType === 'pending' ? 14 : 12;
     accountsTableBody.innerHTML = `<tr><td colspan="${colspanCount}" class="text-center"><span class="loading loading-spinner loading-lg"></span></td></tr>`;
@@ -140,7 +157,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     accounts.forEach(account => {
       // Calculate formulas
-      const costRate = account.robux > 0 && account.cost_php ? (account.cost_php / account.robux / 1000) : 0;
+      const costRate = account.robux > 0 && account.cost_php ? (account.cost_php / (account.robux / 1000)) : 0;
+      // console.log(costRate);
       const pricePhp = account.robux > 0 && account.sold_rate_usd && account.usd_to_php_rate_on_sale
         ? (account.robux / 1000) * (account.sold_rate_usd * account.usd_to_php_rate_on_sale) 
         : 0;
@@ -149,6 +167,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const row = document.createElement('tr');
       row.dataset.accountId = account.id;
       
+      const usdToPhpRate = account.usd_to_php_rate_on_sale ?? currentUsdToPhpRate;
+
       if (currentAccountType === 'pending') {
         row.innerHTML = `
           <td><input type="checkbox" class="checkbox checkbox-sm account-checkbox" data-id="${account.id}" /></td>
@@ -165,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="cost_php" data-id="${account.id}" value="${account.cost_php ?? ''}" /></td>
           <td>${costRate > 0 ? formatCurrency(costRate) : 'N/A'}</td>
           <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="sold_rate_usd" data-id="${account.id}" value="${account.sold_rate_usd ?? ''}" placeholder="USD" /></td>
-          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="usd_to_php_rate_on_sale" data-id="${account.id}" value="${account.usd_to_php_rate_on_sale ?? ''}" placeholder="PHP" /></td>
+          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="usd_to_php_rate_on_sale" data-id="${account.id}" value="${Number.parseInt(usdToPhpRate)}" placeholder="PHP" /></td>
           <td>${pricePhp > 0 ? formatCurrency(pricePhp) : 'N/A'}</td>
           <td class="${profitPhp > 0 ? 'text-success' : profitPhp < 0 ? 'text-error' : ''}">${pricePhp > 0 ? formatCurrency(profitPhp) : 'N/A'}</td>
           <td><input type="datetime-local" class="input input-bordered input-xs w-40 editable-field" data-field="date_added" data-id="${account.id}" value="${account.date_added ? account.date_added.replace(' ', 'T').substring(0, 16) : ''}" /></td>
@@ -193,7 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="cost_php" data-id="${account.id}" value="${account.cost_php ?? ''}" /></td>
           <td>${costRate > 0 ? formatCurrency(costRate) : 'N/A'}</td>
           <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="sold_rate_usd" data-id="${account.id}" value="${account.sold_rate_usd ?? ''}" placeholder="USD" /></td>
-          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="usd_to_php_rate_on_sale" data-id="${account.id}" value="${account.usd_to_php_rate_on_sale ?? ''}" placeholder="PHP" /></td>
+          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="usd_to_php_rate_on_sale" data-id="${account.id}" value="${Number.parseInt(usdToPhpRate)}" placeholder="PHP" /></td>
           <td>${pricePhp > 0 ? formatCurrency(pricePhp) : 'N/A'}</td>
           <td class="${profitPhp > 0 ? 'text-success' : profitPhp < 0 ? 'text-error' : ''}">${pricePhp > 0 ? formatCurrency(profitPhp) : 'N/A'}</td>
           <td><input type="datetime-local" class="input input-bordered input-xs w-40 editable-field" data-field="date_added" data-id="${account.id}" value="${account.date_added ? account.date_added.replace(' ', 'T').substring(0, 16) : ''}" /></td>
@@ -235,16 +255,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Prepare update data
         const updateData = { [fieldName]: value };
-
+        console.log(updateData);
         try {
           const response = await fetch(`/accounts/${accountId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updateData)
           });
-          const result = await response.json();
-          console.log(updateData);
 
+          const result = await response.json();
           if (result.success) {
             showToast(`${fieldName} updated successfully.`, 'success');
             // Update local data
@@ -466,5 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // --- Initial Load ---
-  fetchAccounts();
+  fetchExchangeRate().then(() => {
+    fetchAccounts();
+  });
 });

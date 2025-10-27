@@ -42,6 +42,7 @@ class AccountRepository
       a.id,
       a.user_id,
       a.account_type,
+      a.account_status_id,
       s.name AS status,
       a.name,
       a.robux,
@@ -259,8 +260,13 @@ class AccountRepository
       // }
       if ($value !== null) {
         $fields[] = "{$column} = ?";
-        $params[] = $value;
-        $types .= is_int($value) ? "i" : "s";
+        if ($value instanceof \DateTimeImmutable) {
+          $params[] = $value->format('Y-m-d H:i:s');
+          $types .= 's';
+        } else {
+          $params[] = $value;
+          $types .= is_int($value) ? "i" : "s";
+        }
       }
     }
 
@@ -286,13 +292,26 @@ class AccountRepository
     return $stmt->execute();
   }
 
-  public function updateStatusBulk($ids, $status)
+  public function updateStatusBulk($ids, $status, $soldDate = null)
   {
     $ins = str_repeat('?,', count($ids) - 1) . '?';
-    $query = "UPDATE accounts SET account_status_id = ? WHERE id IN ($ins)";
-    $stmt = $this->mysqli->prepare($query);
+    $query = "UPDATE accounts SET account_status_id = ?";
+
     $types = str_repeat('i', count($ids) + 1);
     $params = array_merge([$status], $ids);
+
+    if ($soldDate) {
+      $query .= ", sold_date = ?";
+      $types = 'i' . str_repeat('i', count($ids)) . 's';
+      $params = array_merge([$status], $ids, [$soldDate]);
+    } else {
+      $types = 'i' . str_repeat('i', count($ids));
+      $params = array_merge([$status], $ids);
+    }
+
+    $query .= " WHERE id IN ($ins)";
+
+    $stmt = $this->mysqli->prepare($query);
     $stmt->bind_param($types, ...$params);
     // no need to manually update the updated_at field, mysql already handle that hehe thank god.
     return $stmt->execute();

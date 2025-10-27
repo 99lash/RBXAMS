@@ -125,6 +125,7 @@ class AccountController
   {
     $id = intval($id);
     $patchData = json_decode(file_get_contents("php://input"), true);
+    // var_dump($patchData);
     $response = $this->accountService->updateAccountById($id, $patchData);
     header('Content-Type: application/json');
     echo json_encode(["success" => $response]);

@@ -15,7 +15,8 @@
 
   <!-- Tabs -->
   <div role="tablist" class="tabs tabs-boxed mb-4">
-    <a role="tab" class="tab tab-active" data-account-type="pending">Pending Accounts (<span id="pending-count">0</span>)</a>
+    <a role="tab" class="tab tab-active" data-account-type="pending">Pending Accounts (<span
+        id="pending-count">0</span>)</a>
     <a role="tab" class="tab" data-account-type="fastflip">Fastflip Accounts (<span id="fastflip-count">0</span>)</a>
   </div>
 
@@ -46,7 +47,7 @@
   <div class="card bg-base-200">
     <div class="card-body p-4">
       <div class="overflow-x-auto">
-        <table class="table table-zebra w-full">
+        <table class="table table-auto w-full">
           <thead id="accounts-table-header">
             <!-- Pending Accounts Header -->
             <tr id="pending-header" class="account-header">
@@ -54,12 +55,12 @@
               <th>Name <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Status <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Robux <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Cost PHP <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Cost (PHP) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Cost Rate <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Rate Sold <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Rate Sold ($) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Current USD to Peso <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Price PHP <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Profit PHP <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Price (PHP) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Profit (PHP) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Date Added <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Unpend Date <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Sold Date <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
@@ -69,13 +70,14 @@
             <tr id="fastflip-header" class="account-header hidden">
               <th><input type="checkbox" class="checkbox checkbox-sm" id="select-all-accounts-fastflip" /></th>
               <th>Name <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Status <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th style="width: 50px;">Status <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Robux <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Cost PHP <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Cost (PHP) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Cost Rate <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Rate Sold <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Rate Sold ($) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Current USD to Peso <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Price PHP <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Price (PHP) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Profit (PHP) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Date Added <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Sold Date <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Actions</th>
@@ -103,7 +105,8 @@
           <label class="label">
             <span class="label-text">Roblox Account Cookies (one per line)</span>
           </label>
-          <textarea name="cookies" class="textarea textarea-bordered h-32 w-full" placeholder="<?= "Cookie1\nCookie2\nCookie3\n..."?>"></textarea>
+          <textarea name="cookies" class="textarea textarea-bordered h-32 w-full"
+            placeholder="<?= "Cookie1\nCookie2\nCookie3\n..." ?>"></textarea>
         </div>
         <div class="modal-action">
           <button type="submit" class="btn btn-primary">Add Account(s)</button>
@@ -138,13 +141,15 @@
           <label class="label">
             <span class="label-text">Cost PHP</span>
           </label>
-          <input type="number" step="0.01" id="edit-account-cost-php" name="cost_php" class="input input-bordered w-full" />
+          <input type="number" step="0.01" id="edit-account-cost-php" name="cost_php"
+            class="input input-bordered w-full" />
         </div>
         <div class="form-control w-full mt-4">
           <label class="label">
             <span class="label-text">Price PHP</span>
           </label>
-          <input type="number" step="0.01" id="edit-account-price-php" name="price_php" class="input input-bordered w-full" />
+          <input type="number" step="0.01" id="edit-account-price-php" name="price_php"
+            class="input input-bordered w-full" />
         </div>
         <div class="form-control w-full mt-4">
           <label class="label">

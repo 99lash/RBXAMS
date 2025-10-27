@@ -51,7 +51,7 @@ class AccountRepository
       a.sold_rate_usd,
       a.unpend_date,
       a.sold_date,
-      a.created_at AS date_added,
+      a.created_at,
       a.updated_at,
       a.deleted_at,
       (a.price_php - a.cost_php) AS profit_php
@@ -72,6 +72,12 @@ class AccountRepository
 
     foreach ($accountsData as $data) {
       $account = AccountModel::fromArray($data);
+      if (!empty($data['created_at'])) {
+        $account->setCreatedAt(new \DateTimeImmutable($data['created_at']));
+      }
+      if (!empty($data['updated_at'])) {
+        $account->setUpdatedAt(new \DateTimeImmutable($data['updated_at']));
+      }
       $results[] = [
         'model' => $account,
         'status' => $data['status'],

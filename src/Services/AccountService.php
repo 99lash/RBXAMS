@@ -73,6 +73,52 @@ class AccountService
     if (empty($patchData))
       return false;
 
+    // Convert status name to status id if present
+    if (isset($patchData['status'])) {
+      $statusId = $this->accountRepo->findAccountStatusId(strtolower($patchData['status']));
+      if ($statusId) {
+        $patchData['account_status_id'] = $statusId;
+      }
+      unset($patchData['status']);
+    }
+
+    // Handle frontend field name mapping for price calculation
+    if (isset($patchData['rate_sold'])) {
+      $patchData['sold_rate_usd'] = $patchData['rate_sold'];
+      unset($patchData['rate_sold']);
+    }
+    if (isset($patchData['usd_to_peso_rate'])) {
+      $patchData['usd_to_php_rate_on_sale'] = $patchData['usd_to_peso_rate'];
+      unset($patchData['usd_to_peso_rate']);
+    }
+
+    // --- Price Calculation Logic ---
+    $priceFields = ['robux', 'sold_rate_usd', 'usd_to_php_rate_on_sale'];
+    $isPriceFieldUpdated = false;
+    foreach ($priceFields as $field) {
+      if (isset($patchData[$field])) {
+        $isPriceFieldUpdated = true;
+        break;
+      }
+    }
+
+    // if one of the fields for price calculation is updated, recalculate price_php
+    if ($isPriceFieldUpdated) {
+      if ($accountData = $this->accountRepo->findById($id)) {
+        $accountModel = $accountData['model'];
+
+        // Get current values, and override with new values from patch
+        $robux = $patchData['robux'] ?? $accountModel->getRobux();
+        $soldRateUsd = $patchData['sold_rate_usd'] ?? $accountModel->getSoldRateUsd();
+        $usdToPhp = $patchData['usd_to_php_rate_on_sale'] ?? $accountModel->getUsdToPhpRateOnSale();
+
+        if ($robux > 0 && $soldRateUsd > 0 && $usdToPhp > 0) {
+          $pricePhp = ($robux / 1000) * ($soldRateUsd * $usdToPhp);
+          $patchData['price_php'] = $pricePhp;
+        }
+      }
+    }
+
     // --- "Buy" Transaction Logic ---
     // Check if a cost is being set for the first time.
     if (isset($patchData['cost_php']) && $patchData['cost_php'] > 0) {

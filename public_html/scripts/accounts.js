@@ -141,8 +141,8 @@ document.addEventListener('DOMContentLoaded', () => {
     accounts.forEach(account => {
       // Calculate formulas
       const costRate = account.robux > 0 && account.cost_php ? (account.cost_php / account.robux / 1000) : 0;
-      const pricePhp = account.robux > 0 && account.rate_sold && account.usd_to_peso_rate 
-        ? (account.robux / 1000) * (account.rate_sold * account.usd_to_peso_rate) 
+      const pricePhp = account.robux > 0 && account.sold_rate_usd && account.usd_to_php_rate_on_sale
+        ? (account.robux / 1000) * (account.sold_rate_usd * account.usd_to_php_rate_on_sale) 
         : 0;
       const profitPhp = pricePhp - (account.cost_php ?? 0);
       
@@ -153,19 +153,19 @@ document.addEventListener('DOMContentLoaded', () => {
         row.innerHTML = `
           <td><input type="checkbox" class="checkbox checkbox-sm account-checkbox" data-id="${account.id}" /></td>
           <td>${account.name}</td>
-          <td>
-            <select class="select select-bordered select-xs editable-field" data-field="status" data-id="${account.id}">
-              <option value="Pending" ${account.status === 'Pending' ? 'selected' : ''}>Pending</option>
-              <option value="Sold" ${account.status === 'Sold' ? 'selected' : ''}>Sold</option>
-              <option value="Unpend" ${account.status === 'Unpend' ? 'selected' : ''}>Unpend</option>
-              <option value="Retrieved" ${account.status === 'Retrieved' ? 'selected' : ''}>Retrieved</option>
+          <td class="min-w-[130px]">
+            <select class="select select-bordered select-xs editable-field w-full" data-field="status" data-id="${account.id}">
+              <option value="Pending" ${account.status === 'pending' ? 'selected' : ''}>Pending</option>
+              <option value="Sold" ${account.status === 'sold' ? 'selected' : ''}>Sold</option>
+              <option value="Unpend" ${account.status === 'unpend' ? 'selected' : ''}>Unpend</option>
+              <option value="Retrieved" ${account.status === 'retrieved' ? 'selected' : ''}>Retrieved</option>
             </select>
           </td>
           <td><input type="number" class="input input-bordered input-xs w-24 editable-field" data-field="robux" data-id="${account.id}" value="${account.robux}" /></td>
           <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="cost_php" data-id="${account.id}" value="${account.cost_php ?? ''}" /></td>
           <td>${costRate > 0 ? formatCurrency(costRate) : 'N/A'}</td>
-          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="rate_sold" data-id="${account.id}" value="${account.rate_sold ?? ''}" placeholder="USD" /></td>
-          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="usd_to_peso_rate" data-id="${account.id}" value="${account.usd_to_peso_rate ?? ''}" placeholder="PHP" /></td>
+          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="sold_rate_usd" data-id="${account.id}" value="${account.sold_rate_usd ?? ''}" placeholder="USD" /></td>
+          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="usd_to_php_rate_on_sale" data-id="${account.id}" value="${account.usd_to_php_rate_on_sale ?? ''}" placeholder="PHP" /></td>
           <td>${pricePhp > 0 ? formatCurrency(pricePhp) : 'N/A'}</td>
           <td class="${profitPhp > 0 ? 'text-success' : profitPhp < 0 ? 'text-error' : ''}">${pricePhp > 0 ? formatCurrency(profitPhp) : 'N/A'}</td>
           <td><input type="datetime-local" class="input input-bordered input-xs w-40 editable-field" data-field="date_added" data-id="${account.id}" value="${account.date_added ? account.date_added.replace(' ', 'T').substring(0, 16) : ''}" /></td>
@@ -182,19 +182,20 @@ document.addEventListener('DOMContentLoaded', () => {
         row.innerHTML = `
           <td><input type="checkbox" class="checkbox checkbox-sm account-checkbox" data-id="${account.id}" /></td>
           <td>${account.name}</td>
-          <td>
-            <select class="select select-bordered select-xs editable-field" data-field="status" data-id="${account.id}">
-              <option value="Sold" ${account.status === 'Sold' ? 'selected' : ''}>Sold</option>
-              <option value="Unpend" ${account.status === 'Unpend' ? 'selected' : ''}>Unpend</option>
-              <option value="Retrieved" ${account.status === 'Retrieved' ? 'selected' : ''}>Retrieved</option>
+          <td class="min-w-[130px]">
+            <select class="select select-bordered select-xs editable-field w-full" data-field="status" data-id="${account.id}">
+              <option value="Sold" ${account.status === 'sold' ? 'selected' : ''}>Sold</option>
+              <option value="Unpend" ${account.status === 'unpend' ? 'selected' : ''}>Unpend</option>
+              <option value="Retrieved" ${account.status === 'retrieved' ? 'selected' : ''}>Retrieved</option>
             </select>
           </td>
           <td><input type="number" class="input input-bordered input-xs w-24 editable-field" data-field="robux" data-id="${account.id}" value="${account.robux}" /></td>
           <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="cost_php" data-id="${account.id}" value="${account.cost_php ?? ''}" /></td>
           <td>${costRate > 0 ? formatCurrency(costRate) : 'N/A'}</td>
-          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="rate_sold" data-id="${account.id}" value="${account.rate_sold ?? ''}" placeholder="USD" /></td>
-          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="usd_to_peso_rate" data-id="${account.id}" value="${account.usd_to_peso_rate ?? ''}" placeholder="PHP" /></td>
+          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="sold_rate_usd" data-id="${account.id}" value="${account.sold_rate_usd ?? ''}" placeholder="USD" /></td>
+          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="usd_to_php_rate_on_sale" data-id="${account.id}" value="${account.usd_to_php_rate_on_sale ?? ''}" placeholder="PHP" /></td>
           <td>${pricePhp > 0 ? formatCurrency(pricePhp) : 'N/A'}</td>
+          <td class="${profitPhp > 0 ? 'text-success' : profitPhp < 0 ? 'text-error' : ''}">${pricePhp > 0 ? formatCurrency(profitPhp) : 'N/A'}</td>
           <td><input type="datetime-local" class="input input-bordered input-xs w-40 editable-field" data-field="date_added" data-id="${account.id}" value="${account.date_added ? account.date_added.replace(' ', 'T').substring(0, 16) : ''}" /></td>
           <td><input type="datetime-local" class="input input-bordered input-xs w-40 editable-field" data-field="sold_date" data-id="${account.id}" value="${account.sold_date ? account.sold_date.replace(' ', 'T').substring(0, 16) : ''}" /></td>
           <td>
@@ -236,12 +237,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const updateData = { [fieldName]: value };
 
         try {
-          const response = await fetch(`/accounts/updateById/${accountId}`, {
+          const response = await fetch(`/accounts/${accountId}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updateData)
           });
           const result = await response.json();
+          console.log(updateData);
+
           if (result.success) {
             showToast(`${fieldName} updated successfully.`, 'success');
             // Update local data

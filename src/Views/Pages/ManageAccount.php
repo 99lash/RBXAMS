@@ -47,16 +47,35 @@
     <div class="card-body p-4">
       <div class="overflow-x-auto">
         <table class="table table-zebra w-full">
-          <thead>
-            <tr>
+          <thead id="accounts-table-header">
+            <!-- Pending Accounts Header -->
+            <tr id="pending-header" class="account-header">
               <th><input type="checkbox" class="checkbox checkbox-sm" id="select-all-accounts" /></th>
               <th>Name <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Status <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Robux <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Cost PHP <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Cost Rate <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Rate Sold <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Current USD to Peso <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Price PHP <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Profit PHP <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Date Added <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Unpend Date <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Sold Date <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Actions</th>
+            </tr>
+            <!-- Fastflip Accounts Header -->
+            <tr id="fastflip-header" class="account-header hidden">
+              <th><input type="checkbox" class="checkbox checkbox-sm" id="select-all-accounts-fastflip" /></th>
+              <th>Name <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Status <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Robux <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Cost PHP <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Cost Rate <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Rate Sold <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Current USD to Peso <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Price PHP <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Date Added <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Sold Date <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Actions</th>

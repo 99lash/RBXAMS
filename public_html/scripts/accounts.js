@@ -18,6 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const editAccountPricePhp = document.getElementById('edit-account-price-php');
   const editAccountStatus = document.getElementById('edit-account-status');
   const paginationControls = document.getElementById('pagination-controls');
+  const pendingHeader = document.getElementById('pending-header');
+  const fastflipHeader = document.getElementById('fastflip-header');
 
   // --- State ---
   let allAccounts = [];
@@ -67,7 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Data Fetching & Rendering ---
   const fetchAccounts = async () => {
-    accountsTableBody.innerHTML = '<tr><td colspan="11" class="text-center"><span class="loading loading-spinner loading-lg"></span></td></tr>';
+    const colspanCount = currentAccountType === 'pending' ? 14 : 12;
+    accountsTableBody.innerHTML = `<tr><td colspan="${colspanCount}" class="text-center"><span class="loading loading-spinner loading-lg"></span></td></tr>`;
     try {
       const params = new URLSearchParams();
       if (currentSortBy) {
@@ -82,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
       applyFiltersAndRender();
     } catch (error) {
       console.error("Failed to fetch accounts:", error);
-      accountsTableBody.innerHTML = '<tr><td colspan="11" class="text-center text-error">Failed to load accounts.</td></tr>';
+      accountsTableBody.innerHTML = `<tr><td colspan="${colspanCount}" class="text-center text-error">Failed to load accounts.</td></tr>`;
       showToast('Failed to load accounts.', 'error');
     }
   };
@@ -111,47 +114,101 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     filteredAccounts = accountsToRender;
+    switchTableHeader();
     renderAccounts(filteredAccounts);
     updateCounts();
   };
 
+  const switchTableHeader = () => {
+    if (currentAccountType === 'pending') {
+      pendingHeader.classList.remove('hidden');
+      fastflipHeader.classList.add('hidden');
+    } else {
+      pendingHeader.classList.add('hidden');
+      fastflipHeader.classList.remove('hidden');
+    }
+    lucide.createIcons();
+  };
+
   const renderAccounts = (accounts) => {
     accountsTableBody.innerHTML = '';
+    const colspanCount = currentAccountType === 'pending' ? 14 : 12;
     if (accounts.length === 0) {
-      accountsTableBody.innerHTML = '<tr><td colspan="11" class="text-center">No accounts found.</td></tr>';
+      accountsTableBody.innerHTML = `<tr><td colspan="${colspanCount}" class="text-center">No accounts found.</td></tr>`;
       return;
     }
 
     accounts.forEach(account => {
-      const profitPhp = (account.price_php ?? 0) - (account.cost_php ?? 0);
+      // Calculate formulas
+      const costRate = account.robux > 0 && account.cost_php ? (account.cost_php / account.robux / 1000) : 0;
+      const pricePhp = account.robux > 0 && account.rate_sold && account.usd_to_peso_rate 
+        ? (account.robux / 1000) * (account.rate_sold * account.usd_to_peso_rate) 
+        : 0;
+      const profitPhp = pricePhp - (account.cost_php ?? 0);
+      
       const row = document.createElement('tr');
-      row.innerHTML = `
-        <td><input type="checkbox" class="checkbox checkbox-sm account-checkbox" data-id="${account.id}" /></td>
-        <td>${account.name}</td>
-        <td>
-          <span class="badge badge-outline ${account.status === 'Sold' ? 'badge-success' : account.status === 'Pending' ? 'badge-warning' : 'badge-info'}">
-            ${account.status}
-          </span>
-        </td>
-        <td>${formatNumber(account.robux)}</td>
-        <td>${formatCurrency(account.cost_php)}</td>
-        <td>${formatCurrency(account.cost_php / account.robux)}</td>
-        <td>${formatCurrency(account.price_php ?? 0)}</td>
-        <td class="${profitPhp > 0 ? 'text-success' : profitPhp < 0 ? 'text-error' : ''}">${formatCurrency(profitPhp)}</td>
-        <td>${formatDate(account.date_added)}</td>
-        <td>${formatDate(account.sold_date)}</td>
-        <td>
-          <button class="btn btn-ghost btn-xs edit-btn" data-id="${account.id}">
-            <i data-lucide="edit" class="w-4 h-4"></i>
-          </button>
-          <button class="btn btn-ghost btn-xs delete-btn" data-id="${account.id}">
-            <i data-lucide="trash-2" class="w-4 h-4"></i>
-          </button>
-        </td>
-      `;
+      row.dataset.accountId = account.id;
+      
+      if (currentAccountType === 'pending') {
+        row.innerHTML = `
+          <td><input type="checkbox" class="checkbox checkbox-sm account-checkbox" data-id="${account.id}" /></td>
+          <td>${account.name}</td>
+          <td>
+            <select class="select select-bordered select-xs editable-field" data-field="status" data-id="${account.id}">
+              <option value="Pending" ${account.status === 'Pending' ? 'selected' : ''}>Pending</option>
+              <option value="Sold" ${account.status === 'Sold' ? 'selected' : ''}>Sold</option>
+              <option value="Unpend" ${account.status === 'Unpend' ? 'selected' : ''}>Unpend</option>
+              <option value="Retrieved" ${account.status === 'Retrieved' ? 'selected' : ''}>Retrieved</option>
+            </select>
+          </td>
+          <td><input type="number" class="input input-bordered input-xs w-24 editable-field" data-field="robux" data-id="${account.id}" value="${account.robux}" /></td>
+          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="cost_php" data-id="${account.id}" value="${account.cost_php ?? ''}" /></td>
+          <td>${costRate > 0 ? formatCurrency(costRate) : 'N/A'}</td>
+          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="rate_sold" data-id="${account.id}" value="${account.rate_sold ?? ''}" placeholder="USD" /></td>
+          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="usd_to_peso_rate" data-id="${account.id}" value="${account.usd_to_peso_rate ?? ''}" placeholder="PHP" /></td>
+          <td>${pricePhp > 0 ? formatCurrency(pricePhp) : 'N/A'}</td>
+          <td class="${profitPhp > 0 ? 'text-success' : profitPhp < 0 ? 'text-error' : ''}">${pricePhp > 0 ? formatCurrency(profitPhp) : 'N/A'}</td>
+          <td><input type="datetime-local" class="input input-bordered input-xs w-40 editable-field" data-field="date_added" data-id="${account.id}" value="${account.date_added ? account.date_added.replace(' ', 'T').substring(0, 16) : ''}" /></td>
+          <td><input type="datetime-local" class="input input-bordered input-xs w-40 editable-field" data-field="unpend_date" data-id="${account.id}" value="${account.unpend_date ? account.unpend_date.replace(' ', 'T').substring(0, 16) : ''}" /></td>
+          <td><input type="datetime-local" class="input input-bordered input-xs w-40 editable-field" data-field="sold_date" data-id="${account.id}" value="${account.sold_date ? account.sold_date.replace(' ', 'T').substring(0, 16) : ''}" ${account.status === 'Unpend' ? 'disabled' : ''} /></td>
+          <td>
+            <button class="btn btn-ghost btn-xs delete-btn" data-id="${account.id}">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </td>
+        `;
+      } else {
+        // Fastflip accounts
+        row.innerHTML = `
+          <td><input type="checkbox" class="checkbox checkbox-sm account-checkbox" data-id="${account.id}" /></td>
+          <td>${account.name}</td>
+          <td>
+            <select class="select select-bordered select-xs editable-field" data-field="status" data-id="${account.id}">
+              <option value="Sold" ${account.status === 'Sold' ? 'selected' : ''}>Sold</option>
+              <option value="Unpend" ${account.status === 'Unpend' ? 'selected' : ''}>Unpend</option>
+              <option value="Retrieved" ${account.status === 'Retrieved' ? 'selected' : ''}>Retrieved</option>
+            </select>
+          </td>
+          <td><input type="number" class="input input-bordered input-xs w-24 editable-field" data-field="robux" data-id="${account.id}" value="${account.robux}" /></td>
+          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="cost_php" data-id="${account.id}" value="${account.cost_php ?? ''}" /></td>
+          <td>${costRate > 0 ? formatCurrency(costRate) : 'N/A'}</td>
+          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="rate_sold" data-id="${account.id}" value="${account.rate_sold ?? ''}" placeholder="USD" /></td>
+          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="usd_to_peso_rate" data-id="${account.id}" value="${account.usd_to_peso_rate ?? ''}" placeholder="PHP" /></td>
+          <td>${pricePhp > 0 ? formatCurrency(pricePhp) : 'N/A'}</td>
+          <td><input type="datetime-local" class="input input-bordered input-xs w-40 editable-field" data-field="date_added" data-id="${account.id}" value="${account.date_added ? account.date_added.replace(' ', 'T').substring(0, 16) : ''}" /></td>
+          <td><input type="datetime-local" class="input input-bordered input-xs w-40 editable-field" data-field="sold_date" data-id="${account.id}" value="${account.sold_date ? account.sold_date.replace(' ', 'T').substring(0, 16) : ''}" /></td>
+          <td>
+            <button class="btn btn-ghost btn-xs delete-btn" data-id="${account.id}">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </td>
+        `;
+      }
+      
       accountsTableBody.appendChild(row);
     });
     lucide.createIcons(); // Re-render lucide icons for new elements
+    attachInlineEditListeners();
   };
 
   const updateCounts = () => {
@@ -159,6 +216,53 @@ document.addEventListener('DOMContentLoaded', () => {
     const fastflipAccounts = allAccounts.filter(acc => acc.account_type.toLowerCase() !== 'pending');
     pendingCountSpan.textContent = pendingAccounts.length;
     fastflipCountSpan.textContent = fastflipAccounts.length;
+  };
+
+  // --- Inline Editing ---
+  const attachInlineEditListeners = () => {
+    const editableFields = document.querySelectorAll('.editable-field');
+    editableFields.forEach(field => {
+      field.addEventListener('change', async (e) => {
+        const accountId = e.target.dataset.id;
+        const fieldName = e.target.dataset.field;
+        let value = e.target.value;
+
+        // Convert datetime-local to MySQL datetime format
+        if (e.target.type === 'datetime-local' && value) {
+          value = value.replace('T', ' ') + ':00';
+        }
+
+        // Prepare update data
+        const updateData = { [fieldName]: value };
+
+        try {
+          const response = await fetch(`/accounts/updateById/${accountId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updateData)
+          });
+          const result = await response.json();
+          if (result.success) {
+            showToast(`${fieldName} updated successfully.`, 'success');
+            // Update local data
+            const accountIndex = allAccounts.findIndex(acc => acc.id == accountId);
+            if (accountIndex !== -1) {
+              allAccounts[accountIndex][fieldName] = value;
+            }
+            // Re-render to update calculated fields
+            applyFiltersAndRender();
+          } else {
+            showToast(`Failed to update ${fieldName}.`, 'error');
+            // Revert the field value
+            fetchAccounts();
+          }
+        } catch (error) {
+          console.error('Error updating field:', error);
+          showToast('An error occurred while updating.', 'error');
+          fetchAccounts();
+        }
+      });
+    });
   };
 
   // --- Event Listeners ---
@@ -190,8 +294,28 @@ document.addEventListener('DOMContentLoaded', () => {
       tab.classList.add('tab-active');
       currentAccountType = tab.dataset.accountType;
       applyFiltersAndRender();
+      // Re-attach select all checkbox listener
+      attachSelectAllListener();
     });
   });
+
+  const attachSelectAllListener = () => {
+    const currentSelectAll = currentAccountType === 'pending' 
+      ? document.getElementById('select-all-accounts')
+      : document.getElementById('select-all-accounts-fastflip');
+    
+    if (currentSelectAll) {
+      // Remove old listeners by cloning
+      const newSelectAll = currentSelectAll.cloneNode(true);
+      currentSelectAll.parentNode.replaceChild(newSelectAll, currentSelectAll);
+      
+      newSelectAll.addEventListener('change', (e) => {
+        document.querySelectorAll('.account-checkbox').forEach(checkbox => {
+          checkbox.checked = e.target.checked;
+        });
+      });
+    }
+  };
 
   searchInput.addEventListener('input', (e) => {
     currentSearchTerm = e.target.value;
@@ -203,11 +327,8 @@ document.addEventListener('DOMContentLoaded', () => {
     applyFiltersAndRender();
   });
 
-  selectAllCheckbox.addEventListener('change', (e) => {
-    document.querySelectorAll('.account-checkbox').forEach(checkbox => {
-      checkbox.checked = e.target.checked;
-    });
-  });
+  // Initial select all listener
+  attachSelectAllListener();
 
   bulkUpdateBtn.addEventListener('click', () => {
     const selectedIds = Array.from(document.querySelectorAll('.account-checkbox:checked'))
@@ -284,21 +405,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   accountsTableBody.addEventListener('click', async (e) => {
-    // Edit button
-    if (e.target.closest('.edit-btn')) {
-      const id = e.target.closest('.edit-btn').dataset.id;
-      const accountToEdit = allAccounts.find(acc => acc.id == id);
-      if (accountToEdit) {
-        editAccountId.value = accountToEdit.id;
-        editAccountName.value = accountToEdit.name;
-        editAccountRobux.value = accountToEdit.robux;
-        editAccountCostPhp.value = accountToEdit.cost_php;
-        editAccountPricePhp.value = accountToEdit.price_php ?? '';
-        editAccountStatus.value = accountToEdit.status;
-        edit_account_modal.showModal();
-      }
-    }
-
     // Delete button
     if (e.target.closest('.delete-btn')) {
       const id = e.target.closest('.delete-btn').dataset.id;

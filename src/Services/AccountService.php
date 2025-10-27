@@ -9,6 +9,7 @@ use App\Transformers\AccountTransformer;
 use App\Utils\AccountType;
 use App\Models\AccountModel;
 use App\Services\SummaryService;
+use App\Services\ScheduledTaskService;
 
 class AccountService
 {
@@ -16,21 +17,27 @@ class AccountService
   private TransactionRepository $transactionRepo;
   private RobloxService $robloxService;
   private SummaryService $summaryService;
+  private ScheduledTaskService $scheduledTaskService;
 
   public function __construct(
     AccountRepository $accountRepo = null,
     TransactionRepository $transactionRepo = null,
     RobloxService $robloxService = null,
-    SummaryService $summaryService = null
+    SummaryService $summaryService = null,
+    ScheduledTaskService $scheduledTaskService = null
   ) {
     $this->accountRepo = $accountRepo ?? new AccountRepository();
     $this->transactionRepo = $transactionRepo ?? new TransactionRepository();
     $this->robloxService = $robloxService ?? new RobloxService();
     $this->summaryService = $summaryService ?? new SummaryService();
+    $this->scheduledTaskService = $scheduledTaskService ?? new ScheduledTaskService($this->accountRepo);
   }
 
   public function getAllAccounts(?string $sortBy = null, ?string $sortOrder = null)
   {
+    // ++ WORKFLOW RULE: Auto-update Pending accounts to Unpend when unpend_date is reached
+    $this->scheduledTaskService->updatePendingToUnpendAccounts();
+    
     $results = $this->accountRepo->findAll($sortBy, $sortOrder);
     // return AccountTransformer::transform($results);
     return AccountTransformer::transformCollection($results);
@@ -147,10 +154,27 @@ class AccountService
     if (isset($patchData['account_status_id']) && $patchData['account_status_id'] === $SOLD_STATUS_ID) {
       if ($accountData = $this->accountRepo->findById($id)) {
         $accountModel = $accountData['model'];
+        
+        // Get the values that will be used (either from patch or current model)
+        $cost_php = $patchData['cost_php'] ?? $accountModel->getCostPhp();
+        $sold_rate_usd = $patchData['sold_rate_usd'] ?? $accountModel->getSoldRateUsd();
+        $usd_to_php_rate = $patchData['usd_to_php_rate_on_sale'] ?? $accountModel->getUsdToPhpRateOnSale();
         $price_php = $patchData['price_php'] ?? $accountModel->getPricePhp();
+        
+        // Calculate profit_php for validation
+        $profit_php = $price_php - ($cost_php ?? 0);
 
-        //TODO: prevent multiple sell even if the account status is sold
-        if ($price_php !== null && $price_php > 0 && $accountModel->getAccountStatusId() !== $SOLD_STATUS_ID) {
+        // ++ WORKFLOW RULE: Validate that all required fields are set before allowing "Sold" status
+        if (!$cost_php || !$sold_rate_usd || !$usd_to_php_rate || !$price_php || $profit_php === null) {
+          // Return error - cannot set to Sold without all required fields
+          throw new \Exception("Cannot set status to 'Sold': Missing required fields (cost_php, sold_rate_usd, usd_to_php_rate_on_sale, price_php, profit_php)");
+        }
+
+        // ++ WORKFLOW RULE: Automatically set sold_date when status changes to "Sold"
+        if ($accountModel->getAccountStatusId() !== $SOLD_STATUS_ID) {
+          $patchData['sold_date'] = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+          
+          // Create sell transaction
           $this->transactionRepo->create(
             $id,
             'sell',
@@ -185,15 +209,29 @@ class AccountService
       foreach ($ids as $id) {
         if ($accountData = $this->accountRepo->findById($id)) {
           $currentModel = $accountData['model'];
-          $price_php = $currentModel->getPricePhp() ?? 0;
-          if ($price_php !== null && $price_php > 0) {
-            $this->transactionRepo->create(
-              $id,
-              'sell',
-              $currentModel->getRobux(),
-              (float) $price_php
-            );
-            $this->summaryService->updateSummaryOnSell($currentModel);
+          
+          // ++ WORKFLOW RULE: Validate required fields before allowing bulk "Sold" status
+          $cost_php = $currentModel->getCostPhp();
+          $sold_rate_usd = $currentModel->getSoldRateUsd();
+          $usd_to_php_rate = $currentModel->getUsdToPhpRateOnSale();
+          $price_php = $currentModel->getPricePhp();
+          $profit_php = $currentModel->getProfitPhp();
+          
+          if (!$cost_php || !$sold_rate_usd || !$usd_to_php_rate || !$price_php || $profit_php === null) {
+            throw new \Exception("Cannot set account {$id} to 'Sold': Missing required fields");
+          }
+          
+          // Only create transaction if not already sold
+          if ($currentModel->getAccountStatusId() !== $SOLD_STATUS_ID) {
+            if ($price_php !== null && $price_php > 0) {
+              $this->transactionRepo->create(
+                $id,
+                'sell',
+                $currentModel->getRobux(),
+                (float) $price_php
+              );
+              $this->summaryService->updateSummaryOnSell($currentModel);
+            }
           }
         }
       }

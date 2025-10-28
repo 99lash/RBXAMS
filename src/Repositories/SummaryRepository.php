@@ -15,10 +15,10 @@ class SummaryRepository
         $this->mysqli = (new Database())->getConnection();
     }
 
-    public function findByDate(string $date): ?SummaryModel
+    public function findByDate(string $userId, string $date): ?SummaryModel
     {
-        $stmt = $this->mysqli->prepare("SELECT * FROM daily_summary WHERE summary_date = ?");
-        $stmt->bind_param('s', $date);
+        $stmt = $this->mysqli->prepare("SELECT * FROM daily_summary WHERE user_id = ? AND summary_date = ?");
+        $stmt->bind_param('ss', $userId, $date);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
 
@@ -29,15 +29,15 @@ class SummaryRepository
         return SummaryModel::fromArray($result);
     }
 
-    public function create(string $date): bool
+    public function create(string $userId, string $date): bool
     {
-        $stmt = $this->mysqli->prepare("INSERT INTO daily_summary (summary_date) VALUES (?)");
+        $stmt = $this->mysqli->prepare("INSERT INTO daily_summary (user_id, summary_date) VALUES (?, ?)");
         if ($stmt === false) {
             error_log('MySQLi prepare failed: ' . $this->mysqli->error);
             return false;
         }
 
-        $stmt->bind_param('s', $date);
+        $stmt->bind_param('ss', $userId, $date);
         
         if (!$stmt->execute()) {
             error_log('MySQLi execute failed: ' . $stmt->error);
@@ -56,7 +56,7 @@ class SummaryRepository
                 pending_robux_sold = ?, fastflip_robux_sold = ?,
                 pending_expenses_php = ?, fastflip_expenses_php = ?,
                 pending_profit_php = ?, fastflip_profit_php = ?
-            WHERE summary_date = ?
+            WHERE user_id = ? AND summary_date = ?
         ");
 
         $pendingRobuxBought = $summary->getPendingRobuxBought();
@@ -67,10 +67,11 @@ class SummaryRepository
         $fastflipExpensesPhp = $summary->getFastflipExpensesPhp();
         $pendingProfitPhp = $summary->getPendingProfitPhp();
         $fastflipProfitPhp = $summary->getFastflipProfitPhp();
+        $userId = $summary->getUserId();
         $summaryDate = $summary->getSummaryDate()->format('Y-m-d');
 
         $stmt->bind_param(
-            'dddddddds',
+            'ddddddddss',
             $pendingRobuxBought,
             $fastflipRobuxBought,
             $pendingRobuxSold,
@@ -79,16 +80,17 @@ class SummaryRepository
             $fastflipExpensesPhp,
             $pendingProfitPhp,
             $fastflipProfitPhp,
+            $userId,
             $summaryDate
         );
 
         return $stmt->execute();
     }
 
-    public function findBetweenDates(string $startDate, string $endDate): array
+    public function findBetweenDates(string $userId, string $startDate, string $endDate): array
     {
-        $stmt = $this->mysqli->prepare("SELECT * FROM daily_summary WHERE summary_date BETWEEN ? AND ? ORDER BY summary_date DESC");
-        $stmt->bind_param('ss', $startDate, $endDate);
+        $stmt = $this->mysqli->prepare("SELECT * FROM daily_summary WHERE user_id = ? AND summary_date BETWEEN ? AND ? ORDER BY summary_date DESC");
+        $stmt->bind_param('sss', $userId, $startDate, $endDate);
         $stmt->execute();
         $result = $stmt->get_result();
         $summaries = [];
@@ -98,9 +100,10 @@ class SummaryRepository
         return $summaries;
     }
 
-    public function findAll(): array
+    public function findAll(string $userId): array
     {
-        $stmt = $this->mysqli->prepare("SELECT * FROM daily_summary ORDER BY summary_date DESC");
+        $stmt = $this->mysqli->prepare("SELECT * FROM daily_summary WHERE user_id = ? ORDER BY summary_date DESC");
+        $stmt->bind_param('s', $userId);
         $stmt->execute();
         $result = $stmt->get_result();
         $summaries = [];
@@ -110,17 +113,17 @@ class SummaryRepository
         return $summaries;
     }
 
-    public function findAndCountBetweenDates(string $startDate, string $endDate, int $limit, int $offset): array
+    public function findAndCountBetweenDates(string $userId, string $startDate, string $endDate, int $limit, int $offset): array
     {
         // Get total count for the period
-        $stmt = $this->mysqli->prepare("SELECT COUNT(*) as total FROM daily_summary WHERE summary_date BETWEEN ? AND ?");
-        $stmt->bind_param('ss', $startDate, $endDate);
+        $stmt = $this->mysqli->prepare("SELECT COUNT(*) as total FROM daily_summary WHERE user_id = ? AND summary_date BETWEEN ? AND ?");
+        $stmt->bind_param('sss', $userId, $startDate, $endDate);
         $stmt->execute();
         $total = $stmt->get_result()->fetch_assoc()['total'];
 
         // Get paginated data
-        $stmt = $this->mysqli->prepare("SELECT * FROM daily_summary WHERE summary_date BETWEEN ? AND ? ORDER BY summary_date DESC LIMIT ? OFFSET ?");
-        $stmt->bind_param('ssii', $startDate, $endDate, $limit, $offset);
+        $stmt = $this->mysqli->prepare("SELECT * FROM daily_summary WHERE user_id = ? AND summary_date BETWEEN ? AND ? ORDER BY summary_date DESC LIMIT ? OFFSET ?");
+        $stmt->bind_param('sssii', $userId, $startDate, $endDate, $limit, $offset);
         $stmt->execute();
         $result = $stmt->get_result();
         $summaries = [];
@@ -134,16 +137,17 @@ class SummaryRepository
         ];
     }
 
-    public function findAndCountAll(int $limit, int $offset): array
+    public function findAndCountAll(string $userId, int $limit, int $offset): array
     {
         // Get total count
-        $stmt = $this->mysqli->prepare("SELECT COUNT(*) as total FROM daily_summary");
+        $stmt = $this->mysqli->prepare("SELECT COUNT(*) as total FROM daily_summary WHERE user_id = ?");
+        $stmt->bind_param('s', $userId);
         $stmt->execute();
         $total = $stmt->get_result()->fetch_assoc()['total'];
 
         // Get paginated data
-        $stmt = $this->mysqli->prepare("SELECT * FROM daily_summary ORDER BY summary_date DESC LIMIT ? OFFSET ?");
-        $stmt->bind_param('ii', $limit, $offset);
+        $stmt = $this->mysqli->prepare("SELECT * FROM daily_summary WHERE user_id = ? ORDER BY summary_date DESC LIMIT ? OFFSET ?");
+        $stmt->bind_param('sii', $userId, $limit, $offset);
         $stmt->execute();
         $result = $stmt->get_result();
         $summaries = [];
@@ -157,7 +161,7 @@ class SummaryRepository
         ];
     }
 
-    public function getAggregatedSummary(string $startDate, string $endDate): array
+    public function getAggregatedSummary(string $userId, string $startDate, string $endDate): array
     {
         $stmt = $this->mysqli->prepare("
             SELECT 
@@ -170,9 +174,9 @@ class SummaryRepository
                 SUM(pending_profit_php) as total_pending_profit_php,
                 SUM(fastflip_profit_php) as total_fastflip_profit_php
             FROM daily_summary 
-            WHERE summary_date BETWEEN ? AND ?
+            WHERE user_id = ? AND summary_date BETWEEN ? AND ?
         ");
-        $stmt->bind_param('ss', $startDate, $endDate);
+        $stmt->bind_param('sss', $userId, $startDate, $endDate);
         $stmt->execute();
         $result = $stmt->get_result()->fetch_assoc();
 

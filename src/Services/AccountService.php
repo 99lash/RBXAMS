@@ -33,12 +33,12 @@ class AccountService
     $this->scheduledTaskService = $scheduledTaskService ?? new ScheduledTaskService($this->accountRepo);
   }
 
-  public function getAllAccounts(?string $sortBy = null, ?string $sortOrder = null)
+  public function getAllAccounts(string $userId, ?string $sortBy = null, ?string $sortOrder = null)
   {
     // ++ WORKFLOW RULE: Auto-update Pending accounts to Unpend when unpend_date is reached
-    $this->scheduledTaskService->updatePendingToUnpendAccounts();
+    $this->scheduledTaskService->updatePendingToUnpendAccounts($userId);
     
-    $results = $this->accountRepo->findAll($sortBy, $sortOrder);
+    $results = $this->accountRepo->findAll($userId, $sortBy, $sortOrder);
     // return AccountTransformer::transform($results);
     return AccountTransformer::transformCollection($results);
   }
@@ -74,7 +74,7 @@ class AccountService
     return AccountTransformer::transform($result);
   }
 
-  public function updateAccountById($id, $patchData)
+  public function updateAccountById($userId, $id, $patchData)
   {
 
     if (empty($patchData))
@@ -134,6 +134,7 @@ class AccountService
 
         if ($currentModel->getCostPhp() === null || $currentModel->getCostPhp() == 0) {
           $this->transactionRepo->create(
+            $userId,
             $id,
             'buy',
             $currentModel->getRobux(),
@@ -141,7 +142,7 @@ class AccountService
           );
 
           $currentModel->setCostPhp((float) $patchData['cost_php']);
-          $this->summaryService->updateSummaryOnBuy($currentModel);
+          $this->summaryService->updateSummaryOnBuy($userId, $currentModel);
         }
       }
     }
@@ -176,6 +177,7 @@ class AccountService
           
           // Create sell transaction
           $this->transactionRepo->create(
+            $userId,
             $id,
             'sell',
             $accountModel->getRobux(),
@@ -183,7 +185,7 @@ class AccountService
           );
 
           $accountModel->setPricePhp((float) $price_php);
-          $this->summaryService->updateSummaryOnSell($accountModel);
+          $this->summaryService->updateSummaryOnSell($userId, $accountModel);
         }
       }
     }

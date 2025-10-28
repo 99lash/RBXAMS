@@ -8,6 +8,7 @@ use JsonSerializable;
 class SummaryModel implements JsonSerializable
 {
     private DateTime $summary_date;
+    private string $user_id;
     private float $pending_robux_bought;
     private float $fastflip_robux_bought;
     private float $pending_robux_sold;
@@ -19,6 +20,7 @@ class SummaryModel implements JsonSerializable
 
     public function __construct(
         string $summary_date,
+        string $user_id,
         float $pending_robux_bought = 0.0,
         float $fastflip_robux_bought = 0.0,
         float $pending_robux_sold = 0.0,
@@ -29,6 +31,7 @@ class SummaryModel implements JsonSerializable
         float $fastflip_profit_php = 0.0
     ) {
         $this->summary_date = new DateTime($summary_date);
+        $this->user_id = $user_id;
         $this->pending_robux_bought = $pending_robux_bought;
         $this->fastflip_robux_bought = $fastflip_robux_bought;
         $this->pending_robux_sold = $pending_robux_sold;
@@ -43,6 +46,7 @@ class SummaryModel implements JsonSerializable
     {
         return new self(
             $data['summary_date'],
+            $data['user_id'],
             (float) ($data['pending_robux_bought'] ?? 0.0),
             (float) ($data['fastflip_robux_bought'] ?? 0.0),
             (float) ($data['pending_robux_sold'] ?? 0.0),
@@ -58,6 +62,11 @@ class SummaryModel implements JsonSerializable
     public function getSummaryDate(): DateTime
     {
         return $this->summary_date;
+    }
+
+    public function getUserId(): string
+    {
+        return $this->user_id;
     }
 
     public function getPendingRobuxBought(): float
@@ -104,6 +113,12 @@ class SummaryModel implements JsonSerializable
     public function setSummaryDate(DateTime $summary_date): self
     {
         $this->summary_date = $summary_date;
+        return $this;
+    }
+
+    public function setUserId(string $user_id): self
+    {
+        $this->user_id = $user_id;
         return $this;
     }
 
@@ -159,6 +174,7 @@ class SummaryModel implements JsonSerializable
     {
         return [
             'summary_date' => $this->getSummaryDate()->format('Y-m-d'),
+            'user_id' => $this->getUserId(),
             'pending_robux_bought' => $this->getPendingRobuxBought(),
             'fastflip_robux_bought' => $this->getFastflipRobuxBought(),
             'pending_robux_sold' => $this->getPendingRobuxSold(),

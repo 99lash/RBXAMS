@@ -18,25 +18,25 @@ class SummaryService
         $this->summaryRepo = $summaryRepo ?? new SummaryRepository();
     }
 
-    public function getSummaryForDate(string $date)
+    public function getSummaryForDate(string $userId, string $date)
     {
-        $this->ensureSummaryExists($date);
-        return $this->summaryRepo->findByDate($date);
+        $this->ensureSummaryExists($userId, $date);
+        return $this->summaryRepo->findByDate($userId, $date);
     }
 
-    private function ensureSummaryExists(string $date): void
+    private function ensureSummaryExists(string $userId, string $date): void
     {
-        if (!$this->summaryRepo->findByDate($date)) {
-            $this->summaryRepo->create($date);
+        if (!$this->summaryRepo->findByDate($userId, $date)) {
+            $this->summaryRepo->create($userId, $date);
         }
     }
 
-    public function updateSummaryOnBuy(AccountModel $account): void
+    public function updateSummaryOnBuy(string $userId, AccountModel $account): void
     {
         $today = (new DateTime())->format('Y-m-d');
-        $this->ensureSummaryExists($today);
+        $this->ensureSummaryExists($userId, $today);
 
-        $summary = $this->summaryRepo->findByDate($today);
+        $summary = $this->summaryRepo->findByDate($userId, $today);
 
         if ($account->getAccountType() === AccountType::PENDING) {
             $summary->setPendingRobuxBought($summary->getPendingRobuxBought() + $account->getRobux());
@@ -49,12 +49,12 @@ class SummaryService
         $this->summaryRepo->update($summary);
     }
 
-    public function updateSummaryOnSell(AccountModel $account): void
+    public function updateSummaryOnSell(string $userId, AccountModel $account): void
     {
         $today = (new DateTime())->format('Y-m-d');
-        $this->ensureSummaryExists($today);
+        $this->ensureSummaryExists($userId, $today);
 
-        $summary = $this->summaryRepo->findByDate($today);
+        $summary = $this->summaryRepo->findByDate($userId, $today);
         $profit = ($account->getPricePhp() ?? 0) - ($account->getCostPhp() ?? 0);
 
         if ($account->getAccountType() === AccountType::PENDING) {
@@ -68,11 +68,11 @@ class SummaryService
         $this->summaryRepo->update($summary);
     }
 
-    public function getSummaries(string $period = 'today', int $page = 1, int $limit = 10)
+    public function getSummaries(string $userId, string $period = 'today', int $page = 1, int $limit = 10)
     {
         $offset = ($page - 1) * $limit;
         $today = new DateTime();
-        $this->ensureSummaryExists($today->format('Y-m-d'));
+        $this->ensureSummaryExists($userId, $today->format('Y-m-d'));
 
         $result = [];
         $total = 0;
@@ -81,12 +81,12 @@ class SummaryService
             case 'week':
                 $startDate = $today->modify('monday this week')->format('Y-m-d');
                 $endDate = $today->modify('sunday this week')->format('Y-m-d');
-                $result = $this->summaryRepo->findAndCountBetweenDates($startDate, $endDate, $limit, $offset);
+                $result = $this->summaryRepo->findAndCountBetweenDates($userId, $startDate, $endDate, $limit, $offset);
                 break;
             case 'month':
                 $startDate = $today->modify('first day of this month')->format('Y-m-d');
                 $endDate = $today->modify('last day of this month')->format('Y-m-d');
-                $result = $this->summaryRepo->findAndCountBetweenDates($startDate, $endDate, $limit, $offset);
+                $result = $this->summaryRepo->findAndCountBetweenDates($userId, $startDate, $endDate, $limit, $offset);
                 break;
             case 'quarter':
                 $month = $today->format('n');
@@ -104,21 +104,21 @@ class SummaryService
                     $startDate = "$year-10-01";
                     $endDate = "$year-12-31";
                 }
-                $result = $this->summaryRepo->findAndCountBetweenDates($startDate, $endDate, $limit, $offset);
+                $result = $this->summaryRepo->findAndCountBetweenDates($userId, $startDate, $endDate, $limit, $offset);
                 break;
             case 'year':
                 $year = $today->format('Y');
                 $startDate = "$year-01-01";
                 $endDate = "$year-12-31";
-                $result = $this->summaryRepo->findAndCountBetweenDates($startDate, $endDate, $limit, $offset);
+                $result = $this->summaryRepo->findAndCountBetweenDates($userId, $startDate, $endDate, $limit, $offset);
                 break;
             case 'all':
-                $result = $this->summaryRepo->findAndCountAll($limit, $offset);
+                $result = $this->summaryRepo->findAndCountAll($userId, $limit, $offset);
                 break;
             case 'today':
             default:
                 $date = $today->format('Y-m-d');
-                $result = $this->summaryRepo->findAndCountBetweenDates($date, $date, $limit, $offset);
+                $result = $this->summaryRepo->findAndCountBetweenDates($userId, $date, $date, $limit, $offset);
                 break;
         }
 
@@ -139,9 +139,9 @@ class SummaryService
         ];
     }
 
-    public function generatePdfForPeriod(string $period): string
+    public function generatePdfForPeriod(string $userId, string $period): string
     {
-        $summariesResult = $this->getSummaries($period);
+        $summariesResult = $this->getSummaries($userId, $period);
         $summariesArray = $summariesResult['data'] ?? [];
 
         // Corrected path to the stylesheet
@@ -208,7 +208,7 @@ class SummaryService
         return $dompdf->output();
     }
 
-    public function getDashboardData(string $period = 'today')
+    public function getDashboardData(string $userId, string $period = 'today')
     {
         $today = new DateTime();
         $startDate = $today->format('Y-m-d');
@@ -251,11 +251,11 @@ class SummaryService
                 break;
         }
 
-        $summary = $this->summaryRepo->getAggregatedSummary($startDate, $endDate);
+        $summary = $this->summaryRepo->getAggregatedSummary($userId, $startDate, $endDate);
 
         $accountRepo = new \App\Repositories\AccountRepository();
-        $accountTypeDistribution = $accountRepo->getAccountTypeDistribution();
-        $accountStatusDistribution = $accountRepo->getAccountStatusDistribution();
+        $accountTypeDistribution = $accountRepo->getAccountTypeDistribution($userId);
+        $accountStatusDistribution = $accountRepo->getAccountStatusDistribution($userId);
 
         return [
             'summary' => $summary,

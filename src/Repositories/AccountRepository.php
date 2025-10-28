@@ -16,7 +16,7 @@ class AccountRepository
     $this->mysqli = (new Database())->getConnection();
   }
 
-  public function findAll(?string $sortBy = null, ?string $sortOrder = null): array
+  public function findAll(string $userId, ?string $sortBy = null, ?string $sortOrder = null): array
   {
     $results = [];
     $accountsData = [];
@@ -38,31 +38,26 @@ class AccountRepository
     }
 
     $query = "
-    SELECT
-      a.id,
-      a.user_id,
-      a.account_type,
-      a.account_status_id,
-      s.name AS status,
-      a.name,
-      a.robux,
-      a.cost_php,
-      a.price_php,
-      a.usd_to_php_rate_on_sale,
-      a.sold_rate_usd,
-      a.unpend_date,
-      a.sold_date,
-      a.created_at,
-      a.updated_at,
-      a.deleted_at,
-      (a.price_php - a.cost_php) AS profit_php
-    FROM accounts AS a
-    LEFT JOIN account_status AS s 
-    ON a.account_status_id = s.id
-    WHERE a.deleted_at IS NULL
+        SELECT
+          a.id, a.user_id, a.account_type, a.account_status_id,
+          s.name AS status, a.name, a.robux, a.cost_php, a.price_php,
+          a.usd_to_php_rate_on_sale, a.sold_rate_usd, a.unpend_date,
+          a.sold_date, a.created_at, a.updated_at, a.deleted_at,
+          (a.price_php - a.cost_php) AS profit_php
+        FROM accounts AS a
+        LEFT JOIN account_status AS s ON a.account_status_id = s.id
+        WHERE a.user_id = ? AND a.deleted_at IS NULL
     " . $orderBy;
 
-    $result = $this->mysqli->query($query);
+    $stmt = $this->mysqli->prepare($query);
+    if (!$stmt) {
+      error_log('Prepare failed: ' . $this->mysqli->error);
+      return [];
+    }
+
+    $stmt->bind_param('s', $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
     if (!$result) {
       error_log('FindAll query failed: ' . $this->mysqli->error);
       return [];
@@ -329,7 +324,7 @@ class AccountRepository
     return $stmt->execute();
   }
 
-  public function getAccountTypeDistribution(): array
+  public function getAccountTypeDistribution(string $userId): array
   {
     $query = "
         SELECT
@@ -342,28 +337,44 @@ class AccountRepository
                 SELECT 2 AS ord, 'Pending' AS account_type
             ) AS types
         LEFT JOIN
-            accounts AS a ON types.account_type = a.account_type AND a.deleted_at IS NULL
+            accounts AS a ON types.account_type = a.account_type AND a.deleted_at IS NULL AND a.user_id = ?
         GROUP BY
             types.account_type, types.ord
         ORDER BY
             types.ord
     ";
-    $result = $this->mysqli->query($query);
+    $stmt = $this->mysqli->prepare($query);
+    if (!$stmt) {
+        error_log('Prepare failed: ' . $this->mysqli->error);
+        return [];
+    }
+
+    $stmt->bind_param('s', $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
     return $result->fetch_all(MYSQLI_ASSOC);
   }
 
-  public function getAccountStatusDistribution(): array
+  public function getAccountStatusDistribution(string $userId): array
   {
     $query = "
         SELECT 
             s.name as status, 
             COUNT(a.id) as count
         FROM account_status as s
-        LEFT JOIN accounts as a ON s.id = a.account_status_id AND a.deleted_at IS NULL
+        LEFT JOIN accounts as a ON s.id = a.account_status_id AND a.deleted_at IS NULL AND a.user_id = ?
         GROUP BY s.name
         ORDER BY s.id
     ";
-    $result = $this->mysqli->query($query);
+    $stmt = $this->mysqli->prepare($query);
+    if (!$stmt) {
+        error_log('Prepare failed: ' . $this->mysqli->error);
+        return [];
+    }
+
+    $stmt->bind_param('s', $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
     return $result->fetch_all(MYSQLI_ASSOC);
   }
 }

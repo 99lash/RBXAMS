@@ -31,7 +31,7 @@ class AccountController
     header('Content-Type: application/json');
     $sortBy = $_GET['sort_by'] ?? null;
     $sortOrder = $_GET['sort_order'] ?? 'asc'; // Default to ascending
-    $accounts = $this->accountService->getAllAccounts($sortBy, $sortOrder);
+    $accounts = $this->accountService->getAllAccounts($this->currentUser['id'], $sortBy, $sortOrder);
     echo json_encode($accounts);
     exit;
   }
@@ -126,7 +126,7 @@ class AccountController
     $id = intval($id);
     $patchData = json_decode(file_get_contents("php://input"), true);
     // var_dump($patchData);
-    $response = $this->accountService->updateAccountById($id, $patchData);
+    $response = $this->accountService->updateAccountById($this->currentUser['id'], $id, $patchData);
     header('Content-Type: application/json');
     echo json_encode(["success" => $response]);
   }

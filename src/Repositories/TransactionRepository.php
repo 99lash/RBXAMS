@@ -26,11 +26,11 @@ class TransactionRepository
    * @param float $phpAmount Represents cost_php for a 'buy' or price_php for a 'sell'.
    * @return bool Returns true on success, false on failure.
    */
-  public function create(string $accountId, string $action, float $robuxAmount, float $phpAmount): bool
+  public function create(string $userId, string $accountId, string $action, float $robuxAmount, float $phpAmount): bool
   {
     $query = "
-    INSERT INTO transactions (id, account_id, action, robux_amount, php_amount)
-    VALUES (?, ?, ?, ?, ?)";
+    INSERT INTO transactions (id, user_id, account_id, action, robux_amount, php_amount)
+    VALUES (?, ?, ?, ?, ?, ?)";
 
     $stmt = $this->mysqli->prepare($query);
 
@@ -42,7 +42,7 @@ class TransactionRepository
 
     $transactionId = (IdGeneratorFactory::createId(IdType::TRANSACTION))->generate();
 
-    $stmt->bind_param("sssdd", $transactionId, $accountId, $action, $robuxAmount, $phpAmount);
+    $stmt->bind_param("ssssdd", $transactionId, $userId, $accountId, $action, $robuxAmount, $phpAmount);
 
     return $stmt->execute();
   }

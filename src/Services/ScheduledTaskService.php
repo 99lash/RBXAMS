@@ -30,7 +30,7 @@ class ScheduledTaskService
    * 
    * @return array Statistics about the update operation
    */
-        public function updatePendingToUnpendAccounts(): array
+        public function updatePendingToUnpendAccounts(string $userId): array
         {
           // $logFile = __DIR__ . '/debug.log';
           // file_put_contents($logFile, "ScheduledTaskService: updatePendingToUnpendAccounts called at " . (new DateTimeImmutable())->format('Y-m-d H:i:s') . "\n", FILE_APPEND);
@@ -55,7 +55,7 @@ class ScheduledTaskService
       
             // Find all pending accounts that have reached their unpend_date
             // $accountsToUpdate = $this->findPendingAccountsToUnpend($pendingStatusId, $logFile);
-            $accountsToUpdate = $this->findPendingAccountsToUnpend($pendingStatusId);
+            $accountsToUpdate = $this->findPendingAccountsToUnpend($userId, $pendingStatusId);
             $stats['checked'] = count($accountsToUpdate);
             // file_put_contents($logFile, "ScheduledTaskService: Found {$stats['checked']} accounts to update\n", FILE_APPEND);
       
@@ -104,12 +104,12 @@ class ScheduledTaskService
          * @return array Array of account IDs to update
          */
         // private function findPendingAccountsToUnpend(int $pendingStatusId, string $logFile): array
-        private function findPendingAccountsToUnpend(int $pendingStatusId): array
+        private function findPendingAccountsToUnpend(string $userId, int $pendingStatusId): array
         {
           $accountIds = [];
           
           // Get all accounts with the current status
-          $allAccounts = $this->accountRepo->findAll();
+          $allAccounts = $this->accountRepo->findAll($userId);
           $now = new DateTimeImmutable();
       
           // file_put_contents($logFile, "  findPendingAccountsToUnpend called. Total accounts found: " . count($allAccounts) . ", Pending Status ID: " . $pendingStatusId . ", Current Time: " . $now->format('Y-m-d H:i:s') . "\n", FILE_APPEND);
@@ -141,7 +141,7 @@ class ScheduledTaskService
    * 
    * @return array Array of pending accounts with their unpend date info
    */
-  public function getPendingAccountsStatus(): array
+  public function getPendingAccountsStatus(string $userId): array
   {
     $pendingAccounts = [];
     $pendingStatusId = $this->accountRepo->findAccountStatusId('pending');
@@ -150,7 +150,7 @@ class ScheduledTaskService
       return $pendingAccounts;
     }
 
-    $allAccounts = $this->accountRepo->findAll();
+    $allAccounts = $this->accountRepo->findAll($userId);
     $now = new DateTimeImmutable();
 
     foreach ($allAccounts as $accountData) {

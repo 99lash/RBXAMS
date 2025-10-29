@@ -116,6 +116,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return currentAccountType === 'pending' ? type === 'pending' : type !== 'pending';
     });
 
+    // console.log(accountsToRender);
+
     // Search
     if (currentSearchTerm) {
       const searchTermLower = currentSearchTerm.toLowerCase();
@@ -142,28 +144,31 @@ document.addEventListener('DOMContentLoaded', () => {
       fastflipHeader.classList.add('hidden');
       statusFilter.innerHTML = `
         <option value="all">All Status</option>
-        <option value="Pending">Pending</option>
-        <option value="Sold">Sold</option>
-        <option value="Unpend">Unpend</option>
-        <option value="Retrieved">Retrieved</option>
+        <option value="pending">Pending</option>
+        <option value="sold">Sold</option>
+        <option value="unpend">Unpend</option>
+        <option value="retrieved">Retrieved</option>
       `;
     } else {
       pendingHeader.classList.add('hidden');
       fastflipHeader.classList.remove('hidden');
       statusFilter.innerHTML = `
         <option value="all">All Status</option>
-        <option value="Sold">Sold</option>
-        <option value="Unpend">Unpend</option>
-        <option value="Retrieved">Retrieved</option>
+        <option value="sold">Sold</option>
+        <option value="unpend">Unpend</option>
+        <option value="retrieved">Retrieved</option>
       `;
     }
+    // After rebuilding the options, re-apply the current filter selection
+    statusFilter.value = currentStatusFilter;
     lucide.createIcons();
   };
 
   const renderAccounts = (accounts) => {
+    console.log(accounts);
     accountsTableBody.innerHTML = '';
     const colspanCount = currentAccountType === 'pending' ? 14 : 12;
-    if (accounts.length === 0) {
+    if (accounts.length === -1) {
       accountsTableBody.innerHTML = `<tr><td colspan="${colspanCount}" class="text-center">No accounts found.</td></tr>`;
       return;
     }
@@ -180,7 +185,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const row = document.createElement('tr');
       row.dataset.accountId = account.id;
 
-      const usdToPhpRate = account.usd_to_php_rate_on_sale ?? currentUsdToPhpRate;
+      // const usdToPhpRate = account.usd_to_php_rate_on_sale ?? currentUsdToPhpRate;
+      let usdToPhpRate;
+      const status = account.status.toLowerCase();
+      if (status === ' sold' || status === 'retrieved') {
+        usdToPhpRate = account.usd_to_php_rate_on_sale ?? currentUsdToPhpRate;
+      } else {
+        usdToPhpRate = currentUsdToPhpRate;
+      }
 
       if (currentAccountType === 'pending') {
         row.innerHTML = `
@@ -255,12 +267,11 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- Inline Editing ---
   const attachInlineEditListeners = () => {
     const editableFields = document.querySelectorAll('.editable-field');
-    editableFields.forEach(field => {
+    editableFields.forEach((field, index) => {
       field.addEventListener('change', async (e) => {
         const accountId = e.target.dataset.id;
         const fieldName = e.target.dataset.field;
         let value = e.target.value;
-
         // Convert datetime-local to MySQL datetime format
         if (e.target.type === 'datetime-local' && value) {
           value = value.replace('T', ' ') + ':00';
@@ -268,7 +279,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Prepare update data
         const updateData = { [fieldName]: value };
-        console.log(updateData);
+
+        if (fieldName === 'cost_php' || fieldName === 'sold_rate_usd') {
+          // console.log(editableFields[index + 2]);
+          const account = allAccounts.find(acc => Number.parseInt(accountId) === acc.id);
+          // console.log(account);
+          if (account && account.status.toLowerCase() === 'unpend' || account.status.toLowerCase() === 'pending') {
+            const row = e.target.closest('tr');
+            const rateInput = row.querySelector('[data-field="usd_to_php_rate_on_sale"]');
+            // console.log(rateInput);
+            if (rateInput) {
+              updateData.usd_to_php_rate_on_sale = rateInput.value;
+            }
+          }
+        }
+        // console.log(updateData);
         try {
           const response = await fetch(`/accounts/${accountId}`, {
             method: 'PATCH',
@@ -286,6 +311,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             // Re-render to update calculated fields
             applyFiltersAndRender();
+            fetchAccounts();
           } else {
             showToast(`Failed to update ${fieldName}.`, 'error');
             // Revert the field value
@@ -359,6 +385,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   statusFilter.addEventListener('change', (e) => {
     currentStatusFilter = e.target.value;
+    console.log(currentStatusFilter);
     applyFiltersAndRender();
   });
 

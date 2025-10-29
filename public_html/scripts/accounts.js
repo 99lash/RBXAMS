@@ -140,9 +140,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentAccountType === 'pending') {
       pendingHeader.classList.remove('hidden');
       fastflipHeader.classList.add('hidden');
+      statusFilter.innerHTML = `
+        <option value="all">All Status</option>
+        <option value="Pending">Pending</option>
+        <option value="Sold">Sold</option>
+        <option value="Unpend">Unpend</option>
+        <option value="Retrieved">Retrieved</option>
+      `;
     } else {
       pendingHeader.classList.add('hidden');
       fastflipHeader.classList.remove('hidden');
+      statusFilter.innerHTML = `
+        <option value="all">All Status</option>
+        <option value="Sold">Sold</option>
+        <option value="Unpend">Unpend</option>
+        <option value="Retrieved">Retrieved</option>
+      `;
     }
     lucide.createIcons();
   };
@@ -160,13 +173,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const costRate = account.robux > 0 && account.cost_php ? (account.cost_php / (account.robux / 1000)) : 0;
       // console.log(costRate);
       const pricePhp = account.robux > 0 && account.sold_rate_usd && account.usd_to_php_rate_on_sale
-        ? (account.robux / 1000) * (account.sold_rate_usd * account.usd_to_php_rate_on_sale) 
+        ? (account.robux / 1000) * (account.sold_rate_usd * account.usd_to_php_rate_on_sale)
         : 0;
       const profitPhp = pricePhp - (account.cost_php ?? 0);
-      
+
       const row = document.createElement('tr');
       row.dataset.accountId = account.id;
-      
+
       const usdToPhpRate = account.usd_to_php_rate_on_sale ?? currentUsdToPhpRate;
 
       if (currentAccountType === 'pending') {
@@ -225,7 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </td>
         `;
       }
-      
+
       accountsTableBody.appendChild(row);
     });
     lucide.createIcons(); // Re-render lucide icons for new elements
@@ -322,15 +335,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   const attachSelectAllListener = () => {
-    const currentSelectAll = currentAccountType === 'pending' 
+    const currentSelectAll = currentAccountType === 'pending'
       ? document.getElementById('select-all-accounts')
       : document.getElementById('select-all-accounts-fastflip');
-    
+
     if (currentSelectAll) {
       // Remove old listeners by cloning
       const newSelectAll = currentSelectAll.cloneNode(true);
       currentSelectAll.parentNode.replaceChild(newSelectAll, currentSelectAll);
-      
+
       newSelectAll.addEventListener('change', (e) => {
         document.querySelectorAll('.account-checkbox').forEach(checkbox => {
           checkbox.checked = e.target.checked;

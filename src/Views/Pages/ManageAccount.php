@@ -97,7 +97,7 @@
         </table>
       </div>
       <div class="flex justify-center mt-4">
-        <div class="join" id="pagination-controls">
+        <div class="join flex justify-between w-full" id="pagination-controls">
           <!-- Pagination will be dynamically loaded here -->
         </div>
       </div>

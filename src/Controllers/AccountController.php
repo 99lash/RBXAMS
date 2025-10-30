@@ -29,10 +29,25 @@ class AccountController
   public function getAccountsJson()
   {
     header('Content-Type: application/json');
+    $page = $_GET['page'] ?? 1;
+    $limit = $_GET['limit'] ?? 10;
     $sortBy = $_GET['sort_by'] ?? null;
     $sortOrder = $_GET['sort_order'] ?? 'asc'; // Default to ascending
-    $accounts = $this->accountService->getAllAccounts($this->currentUser['id'], $sortBy, $sortOrder);
-    echo json_encode($accounts);
+    $search = $_GET['search'] ?? null;
+    $status = $_GET['status'] ?? null;
+    $accountType = $_GET['account_type'] ?? null;
+
+    $result = $this->accountService->getAllAccounts(
+      $this->currentUser['id'],
+      $page,
+      $limit,
+      $sortBy,
+      $sortOrder,
+      $search,
+      $status,
+      $accountType
+    );
+    echo json_encode($result);
     exit;
   }
 

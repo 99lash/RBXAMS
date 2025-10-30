@@ -109,7 +109,7 @@ class ScheduledTaskService
           $accountIds = [];
           
           // Get all accounts with the current status
-          $allAccounts = $this->accountRepo->findAll($userId);
+          $allAccounts = $this->accountRepo->findAll($userId, 1000000, 0, null, null, null, 'Pending', 'Pending');
           $now = new DateTimeImmutable();
       
           // file_put_contents($logFile, "  findPendingAccountsToUnpend called. Total accounts found: " . count($allAccounts) . ", Pending Status ID: " . $pendingStatusId . ", Current Time: " . $now->format('Y-m-d H:i:s') . "\n", FILE_APPEND);
@@ -150,7 +150,7 @@ class ScheduledTaskService
       return $pendingAccounts;
     }
 
-    $allAccounts = $this->accountRepo->findAll($userId);
+    $allAccounts = $this->accountRepo->findAll($userId, 1000000, 0, null, null, null, 'Pending', 'Pending');
     $now = new DateTimeImmutable();
 
     foreach ($allAccounts as $accountData) {

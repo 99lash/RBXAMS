@@ -16,8 +16,16 @@ class AccountRepository
     $this->mysqli = (new Database())->getConnection();
   }
 
-  public function findAll(string $userId, ?string $sortBy = null, ?string $sortOrder = null): array
-  {
+  public function findAll(
+    string $userId,
+    int $limit,
+    int $offset,
+    ?string $sortBy = null,
+    ?string $sortOrder = null,
+    ?string $search = null,
+    ?string $status = null,
+    ?string $accountType = null
+  ): array {
     $results = [];
     $accountsData = [];
     $allowedSortColumns = [
@@ -37,6 +45,31 @@ class AccountRepository
       $orderBy = " ORDER BY {$dbSortBy} {$sortOrder}";
     }
 
+    $whereClauses = ["a.user_id = ?", "a.deleted_at IS NULL"];
+    $params = [$userId];
+    $types = "s";
+
+    if ($search) {
+      $whereClauses[] = "(a.name LIKE ? OR a.robux LIKE ?)";
+      $params[] = "%" . $search . "%";
+      $params[] = "%" . $search . "%";
+      $types .= "ss";
+    }
+
+    if ($status && $status !== 'all') {
+      $whereClauses[] = "s.name = ?";
+      $params[] = $status;
+      $types .= "s";
+    }
+
+    if ($accountType) {
+      $whereClauses[] = "a.account_type = ?";
+      $params[] = $accountType;
+      $types .= "s";
+    }
+
+    $whereSql = "WHERE " . implode(" AND ", $whereClauses);
+
     $query = "
         SELECT
           a.id, a.user_id, a.account_type, a.account_status_id,
@@ -46,8 +79,10 @@ class AccountRepository
           (a.price_php - a.cost_php) AS profit_php
         FROM accounts AS a
         LEFT JOIN account_status AS s ON a.account_status_id = s.id
-        WHERE a.user_id = ? AND a.deleted_at IS NULL
-    " . $orderBy;
+        {$whereSql}
+        {$orderBy}
+        LIMIT ? OFFSET ?
+    ";
 
     $stmt = $this->mysqli->prepare($query);
     if (!$stmt) {
@@ -55,7 +90,11 @@ class AccountRepository
       return [];
     }
 
-    $stmt->bind_param('s', $userId);
+    $params[] = $limit;
+    $params[] = $offset;
+    $types .= "ii";
+
+    $stmt->bind_param($types, ...$params);
     $stmt->execute();
     $result = $stmt->get_result();
     if (!$result) {
@@ -81,6 +120,59 @@ class AccountRepository
       ];
     }
     return $results;
+  }
+
+  public function countAll(
+    string $userId,
+    ?string $search = null,
+    ?string $status = null,
+    ?string $accountType = null
+  ): int {
+    $whereClauses = ["a.user_id = ?", "a.deleted_at IS NULL"];
+    $params = [$userId];
+    $types = "s";
+
+    if ($search) {
+      $whereClauses[] = "(a.name LIKE ? OR a.robux LIKE ?)";
+      $params[] = "%" . $search . "%";
+      $params[] = "%" . $search . "%";
+      $types .= "ss";
+    }
+
+    if ($status && $status !== 'all') {
+      $whereClauses[] = "s.name = ?";
+      $params[] = $status;
+      $types .= "s";
+    }
+
+    if ($accountType) {
+      $whereClauses[] = "a.account_type = ?";
+      $params[] = $accountType;
+      $types .= "s";
+    }
+
+    $whereSql = "WHERE " . implode(" AND ", $whereClauses);
+
+    $query = "
+        SELECT COUNT(a.id) AS total
+        FROM accounts AS a
+        LEFT JOIN account_status AS s ON a.account_status_id = s.id
+        {$whereSql}
+    ";
+
+    $stmt = $this->mysqli->prepare($query);
+    if (!$stmt) {
+      error_log('Prepare failed: ' . $this->mysqli->error);
+      return 0;
+    }
+
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $result->free();
+
+    return $row['total'] ?? 0;
   }
 
   public function findALlExisting()

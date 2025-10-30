@@ -36,11 +36,56 @@ class AccountService
 		$this->summaryService = $summaryService ?? new SummaryService();
 	}
 
-	public function getAllAccounts(string $userId, ?string $sortBy = null, ?string $sortOrder = null)
-	{
+	public function getAllAccounts(
+		string $userId,
+		int $page,
+		int $limit,
+		?string $sortBy = null,
+		?string $sortOrder = null,
+		?string $search = null,
+		?string $status = null,
+		?string $accountType = null
+	) {
 		$this->scheduledTaskService->updatePendingToUnpendAccounts($userId);
-		$results = $this->accountRepo->findAll($userId, $sortBy, $sortOrder);
-		return AccountTransformer::transformCollection($results);
+		$offset = ($page - 1) * $limit;
+
+		$totalAccounts = $this->accountRepo->countAll(
+			$userId,
+			$search,
+			$status,
+			$accountType
+		);
+
+		$accounts = $this->accountRepo->findAll(
+			$userId,
+			$limit,
+			$offset,
+			$sortBy,
+			$sortOrder,
+			$search,
+			$status,
+			$accountType
+		);
+
+		$transformedAccounts = AccountTransformer::transformCollection($accounts);
+
+		$totalPending = $this->accountRepo->countAll($userId, $search, $status, 'pending');
+		$totalFastflip = $this->accountRepo->countAll($userId, $search, $status, 'fastflip');
+
+
+		return [
+			'data' => $transformedAccounts,
+			'pagination' => [
+				'total_items' => $totalAccounts,
+				'per_page' => $limit,
+				'current_page' => $page,
+				'last_page' => ceil($totalAccounts / $limit),
+				'from' => $offset + 1,
+				'to' => min($offset + $limit, $totalAccounts),
+			],
+			'total_pending' => $totalPending,
+			'total_fastflip' => $totalFastflip,
+		];
 	}
 
 	public function create(array $data): bool

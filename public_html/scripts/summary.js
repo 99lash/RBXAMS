@@ -149,12 +149,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       row.innerHTML = `
         <td>${new Date(s.summary_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
-        <td>${formatNumber(s.pending_robux_bought)}</td>
-        <td>${formatNumber(s.fastflip_robux_bought)}</td>
-        <td>${formatNumber(totalDailyBought)}</td>
-        <td>${formatNumber(s.pending_robux_sold)}</td>
-        <td>${formatNumber(s.fastflip_robux_sold)}</td>
-        <td>${formatNumber(totalDailySold)}</td>
+        <td>R$${formatNumber(s.pending_robux_bought)}</td>
+        <td>R$${formatNumber(s.fastflip_robux_bought)}</td>
+        <td>R$${formatNumber(totalDailyBought)}</td>
+        <td>R$${formatNumber(s.pending_robux_sold)}</td>
+        <td>R$${formatNumber(s.fastflip_robux_sold)}</td>
+        <td>R$${formatNumber(totalDailySold)}</td>
         <td>${formatCurrency(s.pending_expenses_php)}</td>
         <td>${formatCurrency(s.fastflip_expenses_php)}</td>
         <td>${formatCurrency(totalDailyExpenses)}</td>

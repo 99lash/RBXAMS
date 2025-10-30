@@ -34,7 +34,7 @@ class SummaryController
     $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
     $limit = isset($_GET['limit']) ? (int) $_GET['limit'] : 10; // Default limit of 10
 
-    $paginatedResult = $this->summaryService->getSummaries($period, $page, $limit);
+    $paginatedResult = $this->summaryService->getSummaries($this->currentUser['id'], $period, $page, $limit);
     
     header('Content-Type: application/json');
     echo json_encode($paginatedResult);
@@ -44,7 +44,7 @@ class SummaryController
   public function exportCsv()
   {
     $period = $_GET['period'] ?? 'all';
-    $summariesResult = $this->summaryService->getSummaries($period);
+    $summariesResult = $this->summaryService->getSummaries($this->currentUser['id'], $period);
     $summariesArray = $summariesResult['data'] ?? [];
 
     header('Content-Type: text/csv');
@@ -96,7 +96,7 @@ class SummaryController
   {
     try {
       $period = $_GET['period'] ?? 'all';
-      $pdfContent = $this->summaryService->generatePdfForPeriod($period);
+      $pdfContent = $this->summaryService->generatePdfForPeriod($this->currentUser['id'], $period);
 
       header('Content-Type: application/pdf');
       header('Content-Disposition: attachment; filename="RBXAMS_Summary_' . $period . '_' . date('Y-m-d') . '.pdf"');
@@ -114,7 +114,7 @@ class SummaryController
   public function getDashboardData()
   {
     $period = $_GET['period'] ?? 'today';
-    $data = $this->summaryService->getDashboardData($period);
+    $data = $this->summaryService->getDashboardData($this->currentUser['id'], $period);
     header('Content-Type: application/json');
     echo json_encode($data);
     exit;

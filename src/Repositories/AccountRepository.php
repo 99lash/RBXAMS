@@ -16,8 +16,16 @@ class AccountRepository
     $this->mysqli = (new Database())->getConnection();
   }
 
-  public function findAll(?string $sortBy = null, ?string $sortOrder = null): array
-  {
+  public function findAll(
+    string $userId,
+    int $limit,
+    int $offset,
+    ?string $sortBy = null,
+    ?string $sortOrder = null,
+    ?string $search = null,
+    ?string $status = null,
+    ?string $accountType = null
+  ): array {
     $results = [];
     $accountsData = [];
     $allowedSortColumns = [
@@ -37,31 +45,58 @@ class AccountRepository
       $orderBy = " ORDER BY {$dbSortBy} {$sortOrder}";
     }
 
-    $query = "
-    SELECT
-      a.id,
-      a.user_id,
-      a.account_type,
-      s.name AS status,
-      a.name,
-      a.robux,
-      a.cost_php,
-      a.price_php,
-      a.usd_to_php_rate_on_sale,
-      a.sold_rate_usd,
-      a.unpend_date,
-      a.sold_date,
-      a.created_at AS date_added,
-      a.updated_at,
-      a.deleted_at,
-      (a.price_php - a.cost_php) AS profit_php
-    FROM accounts AS a
-    LEFT JOIN account_status AS s 
-    ON a.account_status_id = s.id
-    WHERE a.deleted_at IS NULL
-    " . $orderBy;
+    $whereClauses = ["a.user_id = ?", "a.deleted_at IS NULL"];
+    $params = [$userId];
+    $types = "s";
 
-    $result = $this->mysqli->query($query);
+    if ($search) {
+      $whereClauses[] = "(a.name LIKE ? OR a.robux LIKE ?)";
+      $params[] = "%" . $search . "%";
+      $params[] = "%" . $search . "%";
+      $types .= "ss";
+    }
+
+    if ($status && $status !== 'all') {
+      $whereClauses[] = "s.name = ?";
+      $params[] = $status;
+      $types .= "s";
+    }
+
+    if ($accountType) {
+      $whereClauses[] = "a.account_type = ?";
+      $params[] = $accountType;
+      $types .= "s";
+    }
+
+    $whereSql = "WHERE " . implode(" AND ", $whereClauses);
+
+    $query = "
+        SELECT
+          a.id, a.user_id, a.account_type, a.account_status_id,
+          s.name AS status, a.name, a.robux, a.cost_php, a.price_php,
+          a.usd_to_php_rate_on_sale, a.sold_rate_usd, a.unpend_date,
+          a.sold_date, a.created_at, a.updated_at, a.deleted_at,
+          (a.price_php - a.cost_php) AS profit_php
+        FROM accounts AS a
+        LEFT JOIN account_status AS s ON a.account_status_id = s.id
+        {$whereSql}
+        {$orderBy}
+        LIMIT ? OFFSET ?
+    ";
+
+    $stmt = $this->mysqli->prepare($query);
+    if (!$stmt) {
+      error_log('Prepare failed: ' . $this->mysqli->error);
+      return [];
+    }
+
+    $params[] = $limit;
+    $params[] = $offset;
+    $types .= "ii";
+
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
     if (!$result) {
       error_log('FindAll query failed: ' . $this->mysqli->error);
       return [];
@@ -72,6 +107,12 @@ class AccountRepository
 
     foreach ($accountsData as $data) {
       $account = AccountModel::fromArray($data);
+      if (!empty($data['created_at'])) {
+        $account->setCreatedAt(new \DateTimeImmutable($data['created_at']));
+      }
+      if (!empty($data['updated_at'])) {
+        $account->setUpdatedAt(new \DateTimeImmutable($data['updated_at']));
+      }
       $results[] = [
         'model' => $account,
         'status' => $data['status'],
@@ -79,6 +120,59 @@ class AccountRepository
       ];
     }
     return $results;
+  }
+
+  public function countAll(
+    string $userId,
+    ?string $search = null,
+    ?string $status = null,
+    ?string $accountType = null
+  ): int {
+    $whereClauses = ["a.user_id = ?", "a.deleted_at IS NULL"];
+    $params = [$userId];
+    $types = "s";
+
+    if ($search) {
+      $whereClauses[] = "(a.name LIKE ? OR a.robux LIKE ?)";
+      $params[] = "%" . $search . "%";
+      $params[] = "%" . $search . "%";
+      $types .= "ss";
+    }
+
+    if ($status && $status !== 'all') {
+      $whereClauses[] = "s.name = ?";
+      $params[] = $status;
+      $types .= "s";
+    }
+
+    if ($accountType) {
+      $whereClauses[] = "a.account_type = ?";
+      $params[] = $accountType;
+      $types .= "s";
+    }
+
+    $whereSql = "WHERE " . implode(" AND ", $whereClauses);
+
+    $query = "
+        SELECT COUNT(a.id) AS total
+        FROM accounts AS a
+        LEFT JOIN account_status AS s ON a.account_status_id = s.id
+        {$whereSql}
+    ";
+
+    $stmt = $this->mysqli->prepare($query);
+    if (!$stmt) {
+      error_log('Prepare failed: ' . $this->mysqli->error);
+      return 0;
+    }
+
+    $stmt->bind_param($types, ...$params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+    $result->free();
+
+    return $row['total'] ?? 0;
   }
 
   public function findALlExisting()
@@ -125,7 +219,7 @@ class AccountRepository
     $stmt->bind_param('s', $status);
     $stmt->execute();
     $row = $stmt->get_result()->fetch_assoc();
-    return $row['id'];
+    return $row['id'] ?? null;
   }
 
 
@@ -197,6 +291,7 @@ class AccountRepository
             price_php = VALUES(price_php),
             usd_to_php_rate_on_sale = VALUES(usd_to_php_rate_on_sale),
             sold_rate_usd = VALUES(sold_rate_usd),
+            unpend_date = NULL,
             sold_date = VALUES(sold_date),
             deleted_at = NULL,
             updated_at = NOW()
@@ -251,10 +346,16 @@ class AccountRepository
       // if ($column === "id" || $column === 'profit_php') {
       //   continue; // never update primary key
       // }
-      if ($value !== null) {
+      // Allow null for sold_date, otherwise filter out nulls for partial updates
+      if ($value !== null || $column === 'sold_date') {
         $fields[] = "{$column} = ?";
-        $params[] = $value;
-        $types .= is_int($value) ? "i" : "s";
+        if ($value instanceof \DateTimeImmutable) {
+          $params[] = $value->format('Y-m-d H:i:s');
+          $types .= 's';
+        } else {
+          $params[] = $value;
+          $types .= is_int($value) ? "i" : "s";
+        }
       }
     }
 
@@ -280,15 +381,22 @@ class AccountRepository
     return $stmt->execute();
   }
 
-  public function updateStatusBulk($ids, $status)
+  public function updateStatusBulk($ids, $statusId, $soldDate = null)
   {
     $ins = str_repeat('?,', count($ids) - 1) . '?';
-    $query = "UPDATE accounts SET account_status_id = ? WHERE id IN ($ins)";
+    // Always set sold_date. It will be either a date string or NULL.
+    $query = "UPDATE accounts SET account_status_id = ?, sold_date = ? WHERE id IN ($ins)";
+
     $stmt = $this->mysqli->prepare($query);
-    $types = str_repeat('i', count($ids) + 1);
-    $params = array_merge([$status], $ids);
+    if (!$stmt) {
+      error_log("Prepare failed for bulk status update: " . $this->mysqli->error);
+      return false;
+    }
+
+    $types = 'is' . str_repeat('i', count($ids));
+    $params = array_merge([$statusId, $soldDate], $ids);
+
     $stmt->bind_param($types, ...$params);
-    // no need to manually update the updated_at field, mysql already handle that hehe thank god.
     return $stmt->execute();
   }
 
@@ -304,32 +412,57 @@ class AccountRepository
     return $stmt->execute();
   }
 
-  public function getAccountTypeDistribution(): array
+  public function getAccountTypeDistribution(string $userId): array
   {
     $query = "
-        SELECT 
-            account_type, 
-            COUNT(*) as count
-        FROM accounts 
-        WHERE deleted_at IS NULL
-        GROUP BY account_type
+        SELECT
+            types.account_type,
+            COUNT(a.id) AS count
+        FROM
+            (
+                SELECT 1 AS ord, 'Fastflip' AS account_type
+                UNION ALL
+                SELECT 2 AS ord, 'Pending' AS account_type
+            ) AS types
+        LEFT JOIN
+            accounts AS a ON types.account_type = a.account_type AND a.deleted_at IS NULL AND a.user_id = ?
+        GROUP BY
+            types.account_type, types.ord
+        ORDER BY
+            types.ord
     ";
-    $result = $this->mysqli->query($query);
+    $stmt = $this->mysqli->prepare($query);
+    if (!$stmt) {
+        error_log('Prepare failed: ' . $this->mysqli->error);
+        return [];
+    }
+
+    $stmt->bind_param('s', $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
     return $result->fetch_all(MYSQLI_ASSOC);
   }
 
-  public function getAccountStatusDistribution(): array
+  public function getAccountStatusDistribution(string $userId): array
   {
     $query = "
         SELECT 
             s.name as status, 
             COUNT(a.id) as count
-        FROM accounts as a
-        JOIN account_status as s ON a.account_status_id = s.id
-        WHERE a.deleted_at IS NULL
+        FROM account_status as s
+        LEFT JOIN accounts as a ON s.id = a.account_status_id AND a.deleted_at IS NULL AND a.user_id = ?
         GROUP BY s.name
+        ORDER BY s.id
     ";
-    $result = $this->mysqli->query($query);
+    $stmt = $this->mysqli->prepare($query);
+    if (!$stmt) {
+        error_log('Prepare failed: ' . $this->mysqli->error);
+        return [];
+    }
+
+    $stmt->bind_param('s', $userId);
+    $stmt->execute();
+    $result = $stmt->get_result();
     return $result->fetch_all(MYSQLI_ASSOC);
   }
 }

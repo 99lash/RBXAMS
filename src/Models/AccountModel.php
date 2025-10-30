@@ -266,7 +266,7 @@ class AccountModel extends HeroModel
     return $this;
   }
 
-  public function setSoldDate(DateTimeImmutable $sold_date): self
+  public function setSoldDate(?DateTimeImmutable $sold_date): self
   {
     $this->sold_date = $sold_date;
     return $this;

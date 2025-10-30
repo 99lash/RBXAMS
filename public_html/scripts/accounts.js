@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const searchInput = document.getElementById('search-input');
   const statusFilter = document.getElementById('status-filter');
   const selectAllCheckbox = document.getElementById('select-all-accounts');
-  const bulkUpdateBtn = document.getElementById('bulk-update-btn');
+  const bulkUpdateOptions = document.getElementById('bulk-update-options');
   const bulkDeleteBtn = document.getElementById('bulk-delete-btn');
   const addAccountForm = document.getElementById('add-account-form');
   const editAccountForm = document.getElementById('edit-account-form');
@@ -185,18 +185,20 @@ document.addEventListener('DOMContentLoaded', () => {
       const row = document.createElement('tr');
       row.dataset.accountId = account.id;
 
-      // const usdToPhpRate = account.usd_to_php_rate_on_sale ?? currentUsdToPhpRate;
-      let usdToPhpRate;
       const status = account.status.toLowerCase();
-      if (status === ' sold' || status === 'retrieved') {
+      let usdToPhpRate;
+      if (status === 'sold' || status === 'retrieved') {
         usdToPhpRate = account.usd_to_php_rate_on_sale ?? currentUsdToPhpRate;
       } else {
         usdToPhpRate = currentUsdToPhpRate;
       }
 
+      const isSold = status === 'sold';
+      const disabledAttr = isSold ? 'disabled' : '';
+
       if (currentAccountType === 'pending') {
         row.innerHTML = `
-          <td><input type="checkbox" class="checkbox checkbox-sm account-checkbox" data-id="${account.id}" /></td>
+          <td><input type="checkbox" class="checkbox checkbox-sm account-checkbox" data-id="${account.id}"/></td>
           <td>${account.name}</td>
           <td class="min-w-[130px]">
             <select class="select select-bordered select-xs editable-field w-full" data-field="status" data-id="${account.id}">
@@ -206,18 +208,18 @@ document.addEventListener('DOMContentLoaded', () => {
               <option value="Retrieved" ${account.status === 'retrieved' ? 'selected' : ''}>Retrieved</option>
             </select>
           </td>
-          <td><input type="number" class="input input-bordered input-xs w-24 editable-field" data-field="robux" data-id="${account.id}" value="${account.robux}" /></td>
-          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="cost_php" data-id="${account.id}" value="${account.cost_php ?? ''}" /></td>
+          <td><input type="number" class="input input-bordered input-xs w-24 editable-field" data-field="robux" data-id="${account.id}" value="${account.robux}" ${disabledAttr} /></td>
+          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="cost_php" data-id="${account.id}" value="${account.cost_php ?? ''}" ${disabledAttr} /></td>
           <td>${costRate > 0 ? formatCurrency(costRate) : 'N/A'}</td>
-          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="sold_rate_usd" data-id="${account.id}" value="${account.sold_rate_usd ?? ''}" placeholder="USD" /></td>
-          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="usd_to_php_rate_on_sale" data-id="${account.id}" value="${Number.parseInt(usdToPhpRate)}" placeholder="PHP" /></td>
+          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="sold_rate_usd" data-id="${account.id}" value="${account.sold_rate_usd ?? ''}" placeholder="USD" ${disabledAttr} /></td>
+          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="usd_to_php_rate_on_sale" data-id="${account.id}" value="${Number.parseInt(usdToPhpRate)}" placeholder="PHP" ${disabledAttr} /></td>
           <td>${pricePhp > 0 ? formatCurrency(pricePhp) : 'N/A'}</td>
           <td class="${profitPhp > 0 ? 'text-success' : profitPhp < 0 ? 'text-error' : ''}">${pricePhp > 0 ? formatCurrency(profitPhp) : 'N/A'}</td>
-          <td><input type="datetime-local" class="input input-bordered input-xs w-40 editable-field" data-field="date_added" data-id="${account.id}" value="${account.date_added ? account.date_added.replace(' ', 'T').substring(0, 16) : ''}" /></td>
-          <td><input type="datetime-local" class="input input-bordered input-xs w-40 editable-field" data-field="unpend_date" data-id="${account.id}" value="${account.unpend_date ? account.unpend_date.replace(' ', 'T').substring(0, 16) : ''}" /></td>
-          <td><input type="datetime-local" class="input input-bordered input-xs w-40 editable-field" data-field="sold_date" data-id="${account.id}" value="${account.sold_date ? account.sold_date.replace(' ', 'T').substring(0, 16) : ''}" ${account.status === 'Unpend' ? 'disabled' : ''} /></td>
+          <td><input type="datetime-local" class="input input-bordered input-xs w-40 editable-field" data-field="date_added" data-id="${account.id}" value="${account.date_added ? account.date_added.replace(' ', 'T').substring(0, 16) : ''}" ${disabledAttr} /></td>
+          <td><input type="datetime-local" class="input input-bordered input-xs w-40 editable-field" data-field="unpend_date" data-id="${account.id}" value="${account.unpend_date ? account.unpend_date.replace(' ', 'T').substring(0, 16) : ''}" ${disabledAttr} /></td>
+          <td><input type="datetime-local" class="input input-bordered input-xs w-40 editable-field" data-field="sold_date" data-id="${account.id}" value="${account.sold_date ? account.sold_date.replace(' ', 'T').substring(0, 16) : ''}" ${account.status === 'Unpend' ? 'disabled' : ''} ${disabledAttr} /></td>
           <td>
-            <button class="btn btn-ghost btn-xs delete-btn" data-id="${account.id}">
+            <button class="btn btn-ghost btn-xs delete-btn" data-id="${account.id}" ${disabledAttr}>
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           </td>
@@ -225,7 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else {
         // Fastflip accounts
         row.innerHTML = `
-          <td><input type="checkbox" class="checkbox checkbox-sm account-checkbox" data-id="${account.id}" /></td>
+          <td><input type="checkbox" class="checkbox checkbox-sm account-checkbox" data-id="${account.id}"/></td>
           <td>${account.name}</td>
           <td class="min-w-[130px]">
             <select class="select select-bordered select-xs editable-field w-full" data-field="status" data-id="${account.id}">
@@ -234,17 +236,17 @@ document.addEventListener('DOMContentLoaded', () => {
               <option value="Retrieved" ${account.status === 'retrieved' ? 'selected' : ''}>Retrieved</option>
             </select>
           </td>
-          <td><input type="number" class="input input-bordered input-xs w-24 editable-field" data-field="robux" data-id="${account.id}" value="${account.robux}" /></td>
-          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="cost_php" data-id="${account.id}" value="${account.cost_php ?? ''}" /></td>
+          <td><input type="number" class="input input-bordered input-xs w-24 editable-field" data-field="robux" data-id="${account.id}" value="${account.robux}" ${disabledAttr} /></td>
+          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="cost_php" data-id="${account.id}" value="${account.cost_php ?? ''}" ${disabledAttr} /></td>
           <td>${costRate > 0 ? formatCurrency(costRate) : 'N/A'}</td>
-          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="sold_rate_usd" data-id="${account.id}" value="${account.sold_rate_usd ?? ''}" placeholder="USD" /></td>
-          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="usd_to_php_rate_on_sale" data-id="${account.id}" value="${Number.parseInt(usdToPhpRate)}" placeholder="PHP" /></td>
+          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="sold_rate_usd" data-id="${account.id}" value="${account.sold_rate_usd ?? ''}" placeholder="USD" ${disabledAttr} /></td>
+          <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="usd_to_php_rate_on_sale" data-id="${account.id}" value="${Number.parseInt(usdToPhpRate)}" placeholder="PHP" ${disabledAttr} /></td>
           <td>${pricePhp > 0 ? formatCurrency(pricePhp) : 'N/A'}</td>
           <td class="${profitPhp > 0 ? 'text-success' : profitPhp < 0 ? 'text-error' : ''}">${pricePhp > 0 ? formatCurrency(profitPhp) : 'N/A'}</td>
-          <td><input type="datetime-local" class="input input-bordered input-xs w-40 editable-field" data-field="date_added" data-id="${account.id}" value="${account.date_added ? account.date_added.replace(' ', 'T').substring(0, 16) : ''}" /></td>
-          <td><input type="datetime-local" class="input input-bordered input-xs w-40 editable-field" data-field="sold_date" data-id="${account.id}" value="${account.sold_date ? account.sold_date.replace(' ', 'T').substring(0, 16) : ''}" /></td>
+          <td><input type="datetime-local" class="input input-bordered input-xs w-40 editable-field" data-field="date_added" data-id="${account.id}" value="${account.date_added ? account.date_added.replace(' ', 'T').substring(0, 16) : ''}" ${disabledAttr} /></td>
+          <td><input type="datetime-local" class="input input-bordered input-xs w-40 editable-field" data-field="sold_date" data-id="${account.id}" value="${account.sold_date ? account.sold_date.replace(' ', 'T').substring(0, 16) : ''}" ${disabledAttr} /></td>
           <td>
-            <button class="btn btn-ghost btn-xs delete-btn" data-id="${account.id}">
+            <button class="btn btn-ghost btn-xs delete-btn" data-id="${account.id}" ${disabledAttr}>
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
           </td>
@@ -272,13 +274,69 @@ document.addEventListener('DOMContentLoaded', () => {
         const accountId = e.target.dataset.id;
         const fieldName = e.target.dataset.field;
         let value = e.target.value;
+
+        const updateData = { [fieldName]: value };
+
+        if (fieldName === 'sold_date' && value === '') {
+          value = null;
+        }
+
+        // If unpend_date is edited, check if it's in the future and update status to 'Pending'
+        if (fieldName === 'unpend_date' && value) {
+          const unpendDate = new Date(value.replace(' ', 'T'));
+          const now = new Date();
+          const account = allAccounts.find(acc => acc.id == accountId);
+          if (account) {
+            if (unpendDate > now) {
+              updateData.status = 'Pending';
+            } else if (unpendDate <= now && account.status.toLowerCase() === 'pending') {
+              updateData.status = 'Unpend';
+            }
+          }
+        }
+
         // Convert datetime-local to MySQL datetime format
         if (e.target.type === 'datetime-local' && value) {
           value = value.replace('T', ' ') + ':00';
         }
 
-        // Prepare update data
-        const updateData = { [fieldName]: value };
+        // Validation for setting status to "Sold"
+        if (fieldName === 'status' && value.toLowerCase() === 'sold') {
+          const account = allAccounts.find(acc => acc.id == accountId);
+          if (account) {
+            const isPending = account.account_type.toLowerCase() === 'pending';
+            const prerequisites = ['cost_php', 'sold_rate_usd', 'usd_to_php_rate_on_sale'];
+
+            // Find missing or invalid (zero or less) prerequisite fields
+            const missingOrInvalid = prerequisites.filter(field => !account[field] || parseFloat(account[field]) <= 0);
+
+            let errors = [...missingOrInvalid];
+
+            if (isPending) {
+              const unpendDate = account.unpend_date ? new Date(account.unpend_date.replace(' ', 'T')) : null;
+              if (!unpendDate || unpendDate > new Date()) {
+                errors.push('unpend_date (must be valid and in the past)');
+              }
+            }
+
+            if (errors.length > 0) {
+              showToast(`Cannot mark as "Sold". Please set: ${errors.join(', ')}.`, 'error');
+              e.target.value = account.status; // Revert UI change
+              fetchAccounts();
+              return; // Stop the update
+            }
+          }
+        }
+
+
+
+        // If status changes FROM sold to unpend or retrieved, nullify sold_date
+        if (fieldName === 'status') {
+          const account = allAccounts.find(acc => acc.id == accountId);
+          if (account && account.status.toLowerCase() === 'sold' && (value.toLowerCase() === 'unpend' || value.toLowerCase() === 'retrieved')) {
+            updateData.sold_date = null;
+          }
+        }
 
         if (fieldName === 'cost_php' || fieldName === 'sold_rate_usd') {
           // console.log(editableFields[index + 2]);
@@ -293,7 +351,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           }
         }
-        // console.log(updateData);
+        console.log(updateData);
+        console.log(accountId);
         try {
           const response = await fetch(`/accounts/${accountId}`, {
             method: 'PATCH',
@@ -327,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // --- Event Listeners ---
-  const sortableHeaders = document.querySelectorAll('th i[data-lucide="arrow-down-up"]');
+  const sortableHeaders = document.querySelectorAll('th [data-lucide="arrow-down-up"]');
   sortableHeaders.forEach(headerIcon => {
     const th = headerIcon.closest('th');
     const sortBy = th.textContent.trim().toLowerCase().replace(/ /g, '_'); // Convert 'Name ' to 'name'
@@ -348,12 +407,14 @@ document.addEventListener('DOMContentLoaded', () => {
       fetchAccounts();
     });
   });
+  // console.log(sortableHeaders);
 
   accountTabs.forEach(tab => {
     tab.addEventListener('click', () => {
       accountTabs.forEach(t => t.classList.remove('tab-active'));
       tab.classList.add('tab-active');
       currentAccountType = tab.dataset.accountType;
+      renderBulkUpdateDropdown();
       applyFiltersAndRender();
       // Re-attach select all checkbox listener
       attachSelectAllListener();
@@ -389,18 +450,112 @@ document.addEventListener('DOMContentLoaded', () => {
     applyFiltersAndRender();
   });
 
+  const renderBulkUpdateDropdown = () => {
+    let options = `
+        <li><a class="bulk-status-option" data-status="sold">Set to Sold</a></li>
+        <li><a class="bulk-status-option" data-status="unpend">Set to Unpend</a></li>
+        <li><a class="bulk-status-option" data-status="retrieved">Set to Retrieved</a></li>
+    `;
+    if (currentAccountType === 'pending') {
+      options = `
+        <li><a class="bulk-status-option" data-status="sold">Set to Sold</a></li>
+        <li><a class="bulk-status-option" data-status="unpend">Set to Unpend</a></li>
+        <li><a class="bulk-status-option" data-status="pending">Set to Pending</a></li>
+        <li><a class="bulk-status-option" data-status="retrieved">Set to Retrieved</a></li>
+      `;
+    }
+    bulkUpdateOptions.innerHTML = options;
+  };
+
   // Initial select all listener
   attachSelectAllListener();
 
-  bulkUpdateBtn.addEventListener('click', () => {
+  bulkUpdateOptions.addEventListener('click', async (e) => {
+    if (!e.target.classList.contains('bulk-status-option')) return;
+    e.preventDefault(); // Prevent link navigation
+
+    const status = e.target.dataset.status;
     const selectedIds = Array.from(document.querySelectorAll('.account-checkbox:checked'))
       .map(cb => cb.dataset.id);
+
+    /*  
+        (Prevent the user is trying to set the status to sold even though the prerequisites columns are not set)
+        check if the following fields or column of fastflip accounts are not set: cost_php, rate_sold, usd_to_php_rate_on_sale. Then prevent it with a message of "Please set the prerequisites columns".
+        check if the following fields or column of pending accounts are not set: cost_php, rate_sold, usd_to_php_rate_on_sale, and unpend_date not yet reach or null|empty. Then prevent it with a message of "Please set the prerequisites columns".
+     */
+
+    if (status === 'sold') {
+      const accountsToUpdate = allAccounts.filter(acc => selectedIds.includes(String(acc.id)));
+      const accountsWithErrors = [];
+
+      for (const account of accountsToUpdate) {
+        const isPending = account.account_type.toLowerCase() === 'pending';
+        const prerequisites = ['cost_php', 'sold_rate_usd', 'usd_to_php_rate_on_sale'];
+        const missingOrInvalid = prerequisites.filter(field => !account[field] || parseFloat(account[field]) <= 0);
+
+        let errors = [...missingOrInvalid];
+
+        if (isPending) {
+          const unpendDate = account.unpend_date ? new Date(account.unpend_date.replace(' ', 'T')) : null;
+          if (!unpendDate || unpendDate > new Date()) {
+            errors.push('unpend_date (must be valid and in the past)');
+          }
+        }
+
+        if (errors.length > 0) {
+          accountsWithErrors.push({
+            name: account.name,
+            errors
+          });
+        }
+      }
+
+      if (accountsWithErrors.length > 0) {
+        showToast(`Could not update ${accountsWithErrors.length} accounts to "Sold" due to missing prerequisites. See console for details.`, 'error');
+        console.error('Bulk update validation failed for:', accountsWithErrors);
+        return; // Stop the process
+      }
+    }
     if (selectedIds.length === 0) {
-      showToast('No accounts selected for bulk update.', 'warning');
+      showToast('No accounts selected.', 'error');
       return;
     }
-    // TODO: Implement bulk update modal/logic
-    showToast(`Bulk update for IDs: ${selectedIds.join(', ')}`, 'info');
+
+    if (!confirm(`Are you sure you want to set ${selectedIds.length} account(s) to "${status}"?`)) {
+      return;
+    }
+
+    try {
+      const payload = {ids: selectedIds, status: status};
+
+      if (status === 'unpend' || status === 'retrieved') {
+        const accountsToUpdate = allAccounts.filter(acc => selectedIds.includes(String(acc.id)));
+        const allSelectedAreSold = accountsToUpdate.length > 0 && accountsToUpdate.every(acc => acc.status.toLowerCase() === 'sold');
+
+        if (allSelectedAreSold) {
+          payload.sold_date = null;
+        }
+      }
+
+      console.log(payload);
+
+      const response = await fetch('/accounts/bulk-update/status', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        // body: JSON.stringify({ ids: selectedIds, status: status })
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+      if (result.success) {
+        showToast(`Successfully updated ${result.updated.length} account(s).`);
+        fetchAccounts();
+      } else {
+        showToast(`Failed to update accounts: ${result.detail || 'Unknown error'}`, 'error');
+      }
+    } catch (error) {
+      console.error('Error during bulk status update:', error);
+      showToast('An error occurred during bulk update.', 'error');
+    }
   });
 
   bulkDeleteBtn.addEventListener('click', async () => {
@@ -526,6 +681,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Initial Load ---
   fetchExchangeRate().then(() => {
+    renderBulkUpdateDropdown(); // Add this
     fetchAccounts();
   });
 });

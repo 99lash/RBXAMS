@@ -35,28 +35,28 @@
   <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
     <div class="card bg-base-200">
       <div class="card-body">
-        <h2 class="card-title text-base-content/60">Total Robux Bought</h2>
+        <h2 class="card-title text-base-content/60">Total Robux Bought (R$)</h2>
         <p class="text-3xl font-bold" id="total-robux-bought">0</p>
         <p class="text-sm text-base-content/50" id="total-robux-bought-breakdown">P: 0 | F: 0</p>
       </div>
     </div>
     <div class="card bg-base-200">
       <div class="card-body">
-        <h2 class="card-title text-base-content/60">Total Robux Sold</h2>
+        <h2 class="card-title text-base-content/60">Total Robux Sold (R$)</h2>
         <p class="text-3xl font-bold" id="total-robux-sold">0</p>
         <p class="text-sm text-base-content/50" id="total-robux-sold-breakdown">P: 0 | F: 0</p>
       </div>
     </div>
     <div class="card bg-base-200">
       <div class="card-body">
-        <h2 class="card-title text-base-content/60">Total Expenses</h2>
+        <h2 class="card-title text-base-content/60">Total Expenses ₱</h2>
         <p class="text-3xl font-bold" id="total-expenses">₱0.00</p>
         <p class="text-sm text-base-content/50" id="total-expenses-breakdown">P: ₱0.00 | F: ₱0.00</p>
       </div>
     </div>
     <div class="card bg-base-200">
       <div class="card-body">
-        <h2 class="card-title text-base-content/60">Total Profit</h2>
+        <h2 class="card-title text-base-content/60">Total Profit ₱</h2>
         <p class="text-3xl font-bold text-error" id="total-profit">-₱0.00</p>
         <p class="text-sm text-base-content/50" id="total-profit-breakdown">P: -₱0.00 | F: ₱0.00</p>
       </div>
@@ -71,22 +71,22 @@
         <span class="badge badge-neutral" id="activity-days">0 day(s)</span>
       </div>
       <div class="overflow-x-auto">
-        <table class="table table-zebra">
+        <table class="table table-zebra table-fixed">
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Pending Robux Bought</th>
-              <th>Fastflip Robux Bought</th>
-              <th>Total Bought</th>
-              <th>Pending Robux Sold</th>
-              <th>Fastflip Robux Sold</th>
-              <th>Total Sold</th>
-              <th>Pending Expenses</th>
-              <th>Fastflip Expenses</th>
-              <th>Total Expenses</th>
-              <th>Pending Profit</th>
-              <th>Fastflip Profit</th>
-              <th>Total Profit</th>
+              <th class="w-[120px]">Date</th>
+              <th class="w-[200px]">Pending Robux Bought (R$)</th>
+              <th class="w-[200px]">Fastflip Robux Bought (R$)</th>
+              <th class="w-[200px]">Total Bought (R$)</th>
+              <th class="w-[200px]">Pending Robux Sold (R$)</th>
+              <th class="w-[200px]">Fastflip Robux Sold (R$)</th>
+              <th class="w-[200px]">Total Sold (R$)</th>
+              <th class="w-[200px]">Pending Expenses (₱)</th>
+              <th class="w-[200px]">Fastflip Expenses (₱)</th>
+              <th class="w-[200px]">Total Expenses (₱)</th>
+              <th class="w-[200px]">Pending Profit (₱)</th>
+              <th class="w-[200px]">Fastflip Profit (₱)</th>
+              <th>Total Profit (₱)</th>
             </tr>
           </thead>
           <tbody id="summary-table-body">

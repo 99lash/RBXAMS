@@ -15,6 +15,25 @@ class SummaryRepository
         $this->mysqli = (new Database())->getConnection();
     }
 
+    public function getSummaryCalculationData(string $userId, string $date): array
+    {
+        $stmt = $this->mysqli->prepare("
+            SELECT 
+                a.account_type, 
+                t.transaction_type, 
+                a.robux, 
+                t.amount
+            FROM transactions AS t
+            JOIN accounts AS a ON t.account_id = a.id
+            WHERE t.user_id = ? 
+              AND DATE(t.created_at) = ? 
+              AND t.txn_status = 'active'
+        ");
+        $stmt->bind_param('ss', $userId, $date);
+        $stmt->execute();
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
     public function findByDate(string $userId, string $date): ?SummaryModel
     {
         $stmt = $this->mysqli->prepare("SELECT * FROM daily_summary WHERE user_id = ? AND summary_date = ?");
@@ -115,13 +134,11 @@ class SummaryRepository
 
     public function findAndCountBetweenDates(string $userId, string $startDate, string $endDate, int $limit, int $offset): array
     {
-        // Get total count for the period
         $stmt = $this->mysqli->prepare("SELECT COUNT(*) as total FROM daily_summary WHERE user_id = ? AND summary_date BETWEEN ? AND ?");
         $stmt->bind_param('sss', $userId, $startDate, $endDate);
         $stmt->execute();
         $total = $stmt->get_result()->fetch_assoc()['total'];
 
-        // Get paginated data
         $stmt = $this->mysqli->prepare("SELECT * FROM daily_summary WHERE user_id = ? AND summary_date BETWEEN ? AND ? ORDER BY summary_date DESC LIMIT ? OFFSET ?");
         $stmt->bind_param('sssii', $userId, $startDate, $endDate, $limit, $offset);
         $stmt->execute();
@@ -139,13 +156,11 @@ class SummaryRepository
 
     public function findAndCountAll(string $userId, int $limit, int $offset): array
     {
-        // Get total count
         $stmt = $this->mysqli->prepare("SELECT COUNT(*) as total FROM daily_summary WHERE user_id = ?");
         $stmt->bind_param('s', $userId);
         $stmt->execute();
         $total = $stmt->get_result()->fetch_assoc()['total'];
 
-        // Get paginated data
         $stmt = $this->mysqli->prepare("SELECT * FROM daily_summary WHERE user_id = ? ORDER BY summary_date DESC LIMIT ? OFFSET ?");
         $stmt->bind_param('sii', $userId, $limit, $offset);
         $stmt->execute();
@@ -181,5 +196,12 @@ class SummaryRepository
         $result = $stmt->get_result()->fetch_assoc();
 
         return $result ?? [];
+    }
+
+    public function deleteByDate(string $userId, string $date): bool
+    {
+        $stmt = $this->mysqli->prepare("DELETE FROM daily_summary WHERE user_id = ? AND summary_date = ?");
+        $stmt->bind_param('ss', $userId, $date);
+        return $stmt->execute();
     }
 }

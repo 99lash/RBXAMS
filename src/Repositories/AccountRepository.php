@@ -127,7 +127,7 @@ class AccountRepository
     $stmt->bind_param('s', $status);
     $stmt->execute();
     $row = $stmt->get_result()->fetch_assoc();
-    return $row['id'];
+    return $row['id'] ?? null;
   }
 
 
@@ -199,6 +199,7 @@ class AccountRepository
             price_php = VALUES(price_php),
             usd_to_php_rate_on_sale = VALUES(usd_to_php_rate_on_sale),
             sold_rate_usd = VALUES(sold_rate_usd),
+            unpend_date = NULL,
             sold_date = VALUES(sold_date),
             deleted_at = NULL,
             updated_at = NOW()
@@ -253,7 +254,8 @@ class AccountRepository
       // if ($column === "id" || $column === 'profit_php') {
       //   continue; // never update primary key
       // }
-      if ($value !== null) {
+      // Allow null for sold_date, otherwise filter out nulls for partial updates
+      if ($value !== null || $column === 'sold_date') {
         $fields[] = "{$column} = ?";
         if ($value instanceof \DateTimeImmutable) {
           $params[] = $value->format('Y-m-d H:i:s');
@@ -287,28 +289,22 @@ class AccountRepository
     return $stmt->execute();
   }
 
-  public function updateStatusBulk($ids, $status, $soldDate = null)
+  public function updateStatusBulk($ids, $statusId, $soldDate = null)
   {
     $ins = str_repeat('?,', count($ids) - 1) . '?';
-    $query = "UPDATE accounts SET account_status_id = ?";
-
-    $types = str_repeat('i', count($ids) + 1);
-    $params = array_merge([$status], $ids);
-
-    if ($soldDate) {
-      $query .= ", sold_date = ?";
-      $types = 'i' . str_repeat('i', count($ids)) . 's';
-      $params = array_merge([$status], $ids, [$soldDate]);
-    } else {
-      $types = 'i' . str_repeat('i', count($ids));
-      $params = array_merge([$status], $ids);
-    }
-
-    $query .= " WHERE id IN ($ins)";
+    // Always set sold_date. It will be either a date string or NULL.
+    $query = "UPDATE accounts SET account_status_id = ?, sold_date = ? WHERE id IN ($ins)";
 
     $stmt = $this->mysqli->prepare($query);
+    if (!$stmt) {
+      error_log("Prepare failed for bulk status update: " . $this->mysqli->error);
+      return false;
+    }
+
+    $types = 'is' . str_repeat('i', count($ids));
+    $params = array_merge([$statusId, $soldDate], $ids);
+
     $stmt->bind_param($types, ...$params);
-    // no need to manually update the updated_at field, mysql already handle that hehe thank god.
     return $stmt->execute();
   }
 

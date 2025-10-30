@@ -2,48 +2,94 @@
 
 namespace App\Repositories;
 
-use App\Utils\IdGeneratorFactory;
-use App\Utils\IdType;
-use mysqli;
 use App\Config\Database;
+use mysqli;
 
 class TransactionRepository
 {
-  private mysqli $mysqli;
+	private mysqli $mysqli;
 
-  public function __construct()
-  {
-    $db = new Database();
-    $this->mysqli = $db->getConnection();
-  }
+	public function __construct()
+	{
+		$this->mysqli = (new Database())->getConnection();
+	}
 
-  /**
-   * Creates a new daily transaction record.
-   *
-   * @param string $accountId The ID of the related account.
-   * @param string $action The action being performed ('buy' or 'sell').
-   * @param float $robuxAmount The amount of Robux in the transaction.
-   * @param float $phpAmount Represents cost_php for a 'buy' or price_php for a 'sell'.
-   * @return bool Returns true on success, false on failure.
-   */
-  public function create(string $userId, string $accountId, string $action, float $robuxAmount, float $phpAmount): bool
-  {
-    $query = "
-    INSERT INTO transactions (id, user_id, account_id, action, robux_amount, php_amount)
-    VALUES (?, ?, ?, ?, ?, ?)";
+	public function beginTransaction(): void
+	{
+		$this->mysqli->begin_transaction();
+	}
 
-    $stmt = $this->mysqli->prepare($query);
+	public function commit(): void
+	{
+		$this->mysqli->commit();
+	}
 
-    if ($stmt === false) {
-      // Log the error instead of dying for better error handling
-      error_log("Prepare failed: " . $this->mysqli->error);
-      return false;
-    }
+	public function rollback(): void
+	{
+		$this->mysqli->rollback();
+	}
 
-    $transactionId = (IdGeneratorFactory::createId(IdType::TRANSACTION))->generate();
+	public function findActiveTransaction(string $accountId, string $transactionType): ?array
+	{
+		$stmt = $this->mysqli->prepare(
+			"SELECT * FROM transactions WHERE account_id = ? AND transaction_type = ? AND txn_status = 'active' LIMIT 1"
+		);
+		$stmt->bind_param("ss", $accountId, $transactionType);
+		$stmt->execute();
+		$result = $stmt->get_result();
+		return $result->fetch_assoc();
+	}
 
-    $stmt->bind_param("ssssdd", $transactionId, $userId, $accountId, $action, $robuxAmount, $phpAmount);
+	public function voidTransaction(string $transactionId, string $reason): bool
+	{
+		$stmt = $this->mysqli->prepare(
+			"UPDATE transactions SET txn_status = 'voided', reason = ? WHERE transaction_id = ?"
+		);
+		$stmt->bind_param("ss", $reason, $transactionId);
+		return $stmt->execute();
+	}
 
-    return $stmt->execute();
-  }
+	public function create(
+		string $transactionId,
+		string $userId,
+		string $accountId,
+		string $transactionType,
+		float $robux_amount,
+		float $amount,
+		string $txnStatus = 'active',
+		?string $relatedTxnId = null,
+		?string $reason = null,
+		?string $account_type = null
+	): bool {
+		$stmt = $this->mysqli->prepare(
+			"INSERT INTO transactions (transaction_id, user_id, account_id, transaction_type, robux_amount, amount, txn_status, related_txn_id, reason, account_type) 
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+		);
+		$stmt->bind_param(
+			"ssssddssss",
+			$transactionId,
+			$userId,
+			$accountId,
+			$transactionType,
+			$robux_amount,
+			$amount,
+			$txnStatus,
+			$relatedTxnId,
+			$reason,
+			$account_type
+		);
+		return $stmt->execute();
+	}
+
+
+	public function findActiveTransactionsByDate(string $userId, string $date): array
+	{
+		$stmt = $this->mysqli->prepare(
+			"SELECT * FROM transactions WHERE user_id = ? AND DATE(created_at) = ? AND txn_status = 'active' AND (transaction_type = 'BUY' OR transaction_type = 'SELL')"
+		);
+		$stmt->bind_param("ss", $userId, $date);
+		$stmt->execute();
+		$result = $stmt->get_result();
+		return $result->fetch_all(MYSQLI_ASSOC);
+	}
 }

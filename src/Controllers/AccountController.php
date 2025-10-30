@@ -136,19 +136,19 @@ class AccountController
     header('Content-Type: application/json');
     $input = json_decode(file_get_contents('php://input'), true);
     $ids = $input['ids'] ?? [];
-    $statusId = $input['status'] ?? null;
+    $status = $input['status'] ?? null;
 
-    if (empty($ids) || !$statusId) {
+    if (empty($ids) || !$status) {
       http_response_code(400);
-      echo json_encode(['success' => false, 'detail' => 'Missing params'], JSON_PRETTY_PRINT);
+      echo json_encode(['success' => false, 'detail' => 'Missing required parameters: ids and status.'], JSON_PRETTY_PRINT);
       return;
     }
-    $response = $this->accountService->updateStatusBulk($ids, $statusId);
+    $response = $this->accountService->updateStatusBulk($ids, $status);
     if ($response) {
       echo json_encode(['success' => true, 'updated' => $ids], JSON_PRETTY_PRINT);
       return;
     }
-    echo json_encode(['success' => false], JSON_PRETTY_PRINT);
+    echo json_encode(['success' => false, 'detail' => 'Failed to update accounts.'], JSON_PRETTY_PRINT);
   }
 
   public function deleteBulk()

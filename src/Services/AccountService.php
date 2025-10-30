@@ -8,223 +8,238 @@ use App\Services\RobloxAPI\RobloxService;
 use App\Transformers\AccountTransformer;
 use App\Utils\AccountType;
 use App\Models\AccountModel;
-use App\Services\SummaryService;
 use App\Services\ScheduledTaskService;
+use App\Services\SummaryService;
+use App\Utils\IdGeneratorFactory;
+use App\Utils\IdType;
 
 class AccountService
 {
-  private AccountRepository $accountRepo;
-  private TransactionRepository $transactionRepo;
-  private RobloxService $robloxService;
-  private SummaryService $summaryService;
-  private ScheduledTaskService $scheduledTaskService;
+	private AccountRepository $accountRepo;
+	private TransactionRepository $transactionRepo;
+	private RobloxService $robloxService;
+	private ScheduledTaskService $scheduledTaskService;
 
-  public function __construct(
-    AccountRepository $accountRepo = null,
-    TransactionRepository $transactionRepo = null,
-    RobloxService $robloxService = null,
-    SummaryService $summaryService = null,
-    ScheduledTaskService $scheduledTaskService = null
-  ) {
-    $this->accountRepo = $accountRepo ?? new AccountRepository();
-    $this->transactionRepo = $transactionRepo ?? new TransactionRepository();
-    $this->robloxService = $robloxService ?? new RobloxService();
-    $this->summaryService = $summaryService ?? new SummaryService();
-    $this->scheduledTaskService = $scheduledTaskService ?? new ScheduledTaskService($this->accountRepo);
-  }
+	private SummaryService $summaryService;
 
-  public function getAllAccounts(string $userId, ?string $sortBy = null, ?string $sortOrder = null)
-  {
-    // ++ WORKFLOW RULE: Auto-update Pending accounts to Unpend when unpend_date is reached
-    $this->scheduledTaskService->updatePendingToUnpendAccounts($userId);
-    
-    $results = $this->accountRepo->findAll($userId, $sortBy, $sortOrder);
-    // return AccountTransformer::transform($results);
-    return AccountTransformer::transformCollection($results);
-  }
+	public function __construct(
+		AccountRepository $accountRepo = null,
+		TransactionRepository $transactionRepo = null,
+		RobloxService $robloxService = null,
+		ScheduledTaskService $scheduledTaskService = null,
+		SummaryService $summaryService = null
+	) {
+		$this->accountRepo = $accountRepo ?? new AccountRepository();
+		$this->transactionRepo = $transactionRepo ?? new TransactionRepository();
+		$this->robloxService = $robloxService ?? new RobloxService();
+		$this->scheduledTaskService = $scheduledTaskService ?? new ScheduledTaskService($this->accountRepo);
+		$this->summaryService = $summaryService ?? new SummaryService();
+	}
 
-  public function create(array $data): bool
-  {
-    // Encrypt the cookie securely
-    $status = $data['account_type'] == AccountType::PENDING ? 'pending' : 'unpend';
-    $statusId = $this->accountRepo->findAccountStatusId($status);
-    $cookieEnc = base64_encode($data['cookie'] ?? '');
+	public function getAllAccounts(string $userId, ?string $sortBy = null, ?string $sortOrder = null)
+	{
+		$this->scheduledTaskService->updatePendingToUnpendAccounts($userId);
+		$results = $this->accountRepo->findAll($userId, $sortBy, $sortOrder);
+		return AccountTransformer::transformCollection($results);
+	}
 
-    $account = AccountModel::fromArray($data);
-    $account
-      ->setCookieEnc($cookieEnc)
-      ->setAccountStatusId($statusId)
-      ->setRobux($status == AccountType::PENDING ? $data['pendingRobuxTotal'] : $data['robux']);
+	public function create(array $data): bool
+	{
+		$status = $data['account_type'] == AccountType::PENDING ? 'pending' : 'unpend';
+		$statusId = $this->accountRepo->findAccountStatusId($status);
+		$cookieEnc = base64_encode($data['cookie'] ?? '');
 
-    return $this->accountRepo->create($account);
-  }
+		$account = AccountModel::fromArray($data);
+		$account
+			->setCookieEnc($cookieEnc)
+			->setAccountStatusId($statusId)
+			->setRobux($status == AccountType::PENDING ? $data['pendingRobuxTotal'] : $data['robux']);
 
-  public function getByCookie($cookie): ?AccountModel
-  {
-    $cookieEnc = base64_encode($cookie) ?? '';
-    return $this->accountRepo->findByCookie($cookieEnc);
-  }
+		$success = $this->accountRepo->create($account);
+		if ($success) {
+			$this->summaryService->recomputeDailySummary($account->getUserId(), (new \DateTime())->format('Y-m-d'));
+		}
+		return $success;
+	}
 
-  public function getById($id)
-  {
-    $result = $this->accountRepo->findById(intval($id));
-    if (!$result) {
-      return null;
-    }
-    return AccountTransformer::transform($result);
-  }
+	public function getByCookie($cookie): ?AccountModel
+	{
+		$cookieEnc = base64_encode($cookie) ?? '';
+		return $this->accountRepo->findByCookie($cookieEnc);
+	}
 
-  public function updateAccountById($userId, $id, $patchData)
-  {
+	public function getById($id)
+	{
+		$result = $this->accountRepo->findById(intval($id));
+		if (!$result) {
+			return null;
+		}
+		return AccountTransformer::transform($result);
+	}
 
-    if (empty($patchData))
-      return false;
+	public function updateAccountById($userId, $id, $patchData)
+	{
+		if (empty($patchData))
+			return false;
 
-    // Convert status name to status id if present
-    if (isset($patchData['status'])) {
-      $statusId = $this->accountRepo->findAccountStatusId(strtolower($patchData['status']));
-      if ($statusId) {
-        $patchData['account_status_id'] = $statusId;
-      }
-      unset($patchData['status']);
-    }
+		$originalAccountData = $this->accountRepo->findById($id);
+		if (!$originalAccountData) {
+			throw new \Exception("Account not found.");
+		}
+		$originalAccountModel = $originalAccountData['model'];
 
-    // Handle frontend field name mapping for price calculation
-    if (isset($patchData['rate_sold'])) {
-      $patchData['sold_rate_usd'] = $patchData['rate_sold'];
-      unset($patchData['rate_sold']);
-    }
-    if (isset($patchData['usd_to_peso_rate'])) {
-      $patchData['usd_to_php_rate_on_sale'] = $patchData['usd_to_peso_rate'];
-      unset($patchData['usd_to_peso_rate']);
-    }
+		if (isset($patchData['status'])) {
+			$statusId = $this->accountRepo->findAccountStatusId(strtolower($patchData['status']));
+			if ($statusId) {
+				$patchData['account_status_id'] = $statusId;
+			}
+			unset($patchData['status']);
+		}
 
-    // --- Price Calculation Logic ---
-    $priceFields = ['robux', 'sold_rate_usd', 'usd_to_php_rate_on_sale'];
-    $isPriceFieldUpdated = false;
-    foreach ($priceFields as $field) {
-      if (isset($patchData[$field])) {
-        $isPriceFieldUpdated = true;
-        break;
-      }
-    }
+		if (isset($patchData['revert_sold']) && $patchData['revert_sold']) {
+			return $this->handleRevertSoldTransaction($userId, $id, "Reverted from Sold to Unpend by user");
+		}
 
-    // if one of the fields for price calculation is updated, recalculate price_php
-    if ($isPriceFieldUpdated) {
-      if ($accountData = $this->accountRepo->findById($id)) {
-        $accountModel = $accountData['model'];
+		if (isset($patchData['cost_php']) && $patchData['cost_php'] != $originalAccountModel->getCostPhp()) {
+			$this->handleBuyTransaction($userId, $id, (float) $patchData['cost_php'], 'User updated cost');
+		}
 
-        // Get current values, and override with new values from patch
-        $robux = $patchData['robux'] ?? $accountModel->getRobux();
-        $soldRateUsd = $patchData['sold_rate_usd'] ?? $accountModel->getSoldRateUsd();
-        $usdToPhp = $patchData['usd_to_php_rate_on_sale'] ?? $accountModel->getUsdToPhpRateOnSale();
+		$SOLD_STATUS_ID = $this->accountRepo->findAccountStatusId('sold');
+		if (isset($patchData['account_status_id']) && $patchData['account_status_id'] === $SOLD_STATUS_ID && $originalAccountModel->getAccountStatusId() !== $SOLD_STATUS_ID) {
+			$pricePhp = $this->calculatePricePhp($patchData, $originalAccountModel);
+			$patchData['price_php'] = $pricePhp;
+			$this->handleSellTransaction($userId, $id, $pricePhp, 'Account sold by user');
+			$patchData['sold_date'] = new \DateTimeImmutable();
+		}
 
-        if ($robux > 0 && $soldRateUsd > 0 && $usdToPhp > 0) {
-          $pricePhp = ($robux / 1000) * ($soldRateUsd * $usdToPhp);
-          $patchData['price_php'] = $pricePhp;
-        }
-      }
-    }
+		$account = new AccountModel($id);
+		foreach ($patchData as $field => $value) {
+			$method = "set" . str_replace(' ', '', ucwords(str_replace('_', ' ', $field)));
+			if (method_exists($account, $method)) {
+				$account->$method($value);
+			}
+		}
 
-    // --- "Buy" Transaction Logic ---
-    // Check if a cost is being set for the first time.
-    if (isset($patchData['cost_php']) && $patchData['cost_php'] > 0) {
-      if ($currentAccountData = $this->accountRepo->findById($id)) {
-        $currentModel = $currentAccountData['model'];
+		$updateSuccess = $this->accountRepo->updatePartial($account);
 
-        if ($currentModel->getCostPhp() === null || $currentModel->getCostPhp() == 0) {
-          $this->transactionRepo->create(
-            $userId,
-            $id,
-            'buy',
-            $currentModel->getRobux(),
-            (float) $patchData['cost_php']
-          );
+		// Recompute daily summary if any transaction-related data was updated
+		if (isset($patchData['cost_php']) || isset($patchData['account_status_id']) || isset($patchData['revert_sold'])) {
+			$this->summaryService->recomputeDailySummary($userId, date('Y-m-d'));
+		}
 
-          $currentModel->setCostPhp((float) $patchData['cost_php']);
-          $this->summaryService->updateSummaryOnBuy($userId, $currentModel);
-        }
-      }
-    }
+		return $updateSuccess;
+	}
 
+	private function handleBuyTransaction(string $userId, string $accountId, float $newCost, string $reason)
+	{
+		$this->transactionRepo->beginTransaction();
+		try {
+			$oldTxn = $this->transactionRepo->findActiveTransaction($accountId, 'BUY');
+			$oldTxnId = null;
+			if ($oldTxn) {
+				$oldTxnId = $oldTxn['transaction_id'];
+				$this->transactionRepo->voidTransaction($oldTxnId, 'Corrected by new entry');
+			}
+			$account = $this->accountRepo->findById($accountId)['model'];
+			$newTxnId = (IdGeneratorFactory::createId(IdType::TRANSACTION))->generate();
+			$this->transactionRepo->create($newTxnId, $userId, $accountId, 'BUY', $account->getRobux(), $newCost, 'active', $oldTxnId, $reason, $account->getAccountType());
 
+			$this->transactionRepo->commit();
+		} catch (\Exception $e) {
+			$this->transactionRepo->rollback();
+			throw $e;
+		}
+	}
 
-    // --- "Sell" Transaction Logic ---
-    // Check if the account status is being updated to "sold".
-    $SOLD_STATUS_ID = $this->accountRepo->findAccountStatusId('sold');
-    if (isset($patchData['account_status_id']) && $patchData['account_status_id'] === $SOLD_STATUS_ID) {
-      if ($accountData = $this->accountRepo->findById($id)) {
-        $accountModel = $accountData['model'];
-        
-        // Get the values that will be used (either from patch or current model)
-        $cost_php = $patchData['cost_php'] ?? $accountModel->getCostPhp();
-        $sold_rate_usd = $patchData['sold_rate_usd'] ?? $accountModel->getSoldRateUsd();
-        $usd_to_php_rate = $patchData['usd_to_php_rate_on_sale'] ?? $accountModel->getUsdToPhpRateOnSale();
-        $price_php = $patchData['price_php'] ?? $accountModel->getPricePhp();
-        
-        // Calculate profit_php for validation
-        $profit_php = $price_php - ($cost_php ?? 0);
-        
-        // ++ WORKFLOW RULE: Validate that all required fields are set before allowing "Sold" status
-        if (!$cost_php || !$sold_rate_usd || !$usd_to_php_rate || !$price_php || $profit_php === null) {
-          // Return error - cannot set to Sold without all required fields
-          throw new \Exception("Cannot set status to 'Sold': Missing required fields (cost_php, sold_rate_usd, usd_to_php_rate_on_sale, price_php, profit_php)");
-        }
+	private function handleSellTransaction(string $userId, string $accountId, float $soldPrice, string $reason)
+	{
+		$this->transactionRepo->beginTransaction();
+		try {
+			$oldTxn = $this->transactionRepo->findActiveTransaction($accountId, 'SELL');
+			$oldTxnId = null;
+			if ($oldTxn) {
+				$oldTxnId = $oldTxn['transaction_id'];
+				$this->transactionRepo->voidTransaction($oldTxnId, 'Superseded by new SELL transaction');
+			}
+			$account = $this->accountRepo->findById($accountId)['model'];
+			$newTxnId = (IdGeneratorFactory::createId(IdType::TRANSACTION))->generate();
+			$this->transactionRepo->create($newTxnId, $userId, $accountId, 'SELL', $account->getRobux(), $soldPrice, 'active', $oldTxnId, $reason, $account->getAccountType());
 
-        // ++ WORKFLOW RULE: Automatically set sold_date when status changes to "Sold"
-        if ($accountModel->getAccountStatusId() !== $SOLD_STATUS_ID) {
-          $patchData['sold_date'] = new \DateTimeImmutable();
-          
-          // Create sell transaction
-          $this->transactionRepo->create(
-            $userId,
-            $id,
-            'sell',
-            $accountModel->getRobux(),
-            (float) $price_php
-          );
+			$this->transactionRepo->commit();
+		} catch (\Exception $e) {
+			$this->transactionRepo->rollback();
+			throw $e;
+		}
+	}
 
-          $accountModel->setPricePhp((float) $price_php);
-          $this->summaryService->updateSummaryOnSell($userId, $accountModel);
-        }
-      }
-    }
+	private function handleRevertSoldTransaction(string $userId, string $accountId, string $reason)
+	{
+		$this->transactionRepo->beginTransaction();
+		try {
+			$activeSellTxn = $this->transactionRepo->findActiveTransaction($accountId, 'SELL');
+			if ($activeSellTxn) {
+				$this->transactionRepo->voidTransaction($activeSellTxn['transaction_id'], $reason);
 
-    $account = new AccountModel($id);
-    foreach ($patchData as $field => $value) {
-      $method = "set" . str_replace(' ', '', ucwords(str_replace('_', ' ', $field)));
-      if (method_exists($account, $method)) {
-        $account->$method($value);
-      }
-    }
+				$unpendStatusId = $this->accountRepo->findAccountStatusId('unpend');
+				$account = new AccountModel($accountId);
+				$account->setAccountStatusId($unpendStatusId);
+				$account->setSoldDate(null);
+				$this->accountRepo->updatePartial($account);
 
-    return $this->accountRepo->updatePartial($account);
-  }
+				$transactionDate = (new \DateTime($activeSellTxn['transaction_date']))->format('Y-m-d');
+				$this->summaryService->recomputeDailySummary($userId, $transactionDate);
+			} else {
+				$this->transactionRepo->rollback();
+				return false;
+			}
 
-  public function updateStatusBulk($ids, $status)
-  {
-    // --- "Sell" Transaction Logic ---
-    // Check if the account status is being updated to "sold".
-    $SOLD_STATUS_ID = $this->accountRepo->findAccountStatusId('sold');
-    if (isset($status) && $status === $SOLD_STATUS_ID) {
-      // existing validation logic...
-      $soldDate = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
-      return $this->accountRepo->updateStatusBulk($ids, $status, $soldDate);
-    }
+			$this->transactionRepo->commit();
+			return true;
+		} catch (\Exception $e) {
+			$this->transactionRepo->rollback();
+			throw $e;
+		}
+	}
 
-    return $this->accountRepo->updateStatusBulk($ids, $status);
-  }
+	private function calculatePricePhp(array $patchData, AccountModel $accountModel): float
+	{
+		if (isset($patchData['rate_sold'])) {
+			$patchData['sold_rate_usd'] = $patchData['rate_sold'];
+		}
+		if (isset($patchData['usd_to_peso_rate'])) {
+			$patchData['usd_to_php_rate_on_sale'] = $patchData['usd_to_peso_rate'];
+		}
 
-  public function deleteBulk($ids)
-  {
-    foreach ($ids as $id) {
-      // var_dump($id);
-      if ($this->accountRepo->findById($id)) {
-      }
+		$robux = $patchData['robux'] ?? $accountModel->getRobux();
+		$soldRateUsd = $patchData['sold_rate_usd'] ?? $accountModel->getSoldRateUsd();
+		$usdToPhp = $patchData['usd_to_php_rate_on_sale'] ?? $accountModel->getUsdToPhpRateOnSale();
 
-      //TODO: implement id not found response
-    }
+		if ($robux > 0 && $soldRateUsd > 0 && $usdToPhp > 0) {
+			return ($robux / 1000) * ($soldRateUsd * $usdToPhp);
+		}
+		return $patchData['price_php'] ?? $accountModel->getPricePhp() ?? 0;
+	}
 
-    return $this->accountRepo->deleteBulk($ids);
-  }
+	public function updateStatusBulk($ids, $statusString)
+	{
+		$statusId = $this->accountRepo->findAccountStatusId(strtolower($statusString));
+		if (!$statusId) {
+			error_log("AccountService: Status ID not found for status: " . $statusString);
+			return false;
+		}
+
+		$SOLD_STATUS_ID = $this->accountRepo->findAccountStatusId('sold');
+
+		$soldDate = null; // Default to null
+		if ($statusId === $SOLD_STATUS_ID) {
+			$soldDate = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
+		}
+
+		return $this->accountRepo->updateStatusBulk($ids, $statusId, $soldDate);
+	}
+
+	public function deleteBulk($ids)
+	{
+		return $this->accountRepo->deleteBulk($ids);
+	}
 }

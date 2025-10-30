@@ -30,15 +30,23 @@
         </label>
 
         <select id="status-filter" class="select select-bordered w-full md:w-auto">
-          <option value="all">All Status</option>
+          <!-- <option value="all">All Status</option>
           <option value="Pending">Pending</option>
           <option value="Sold">Sold</option>
           <option value="Unpend">Unpend</option>
-          <option value="Retrieved">Retrieved</option>
+          <option value="Retrieved">Retrieved</option> -->
         </select>
 
-        <button id="bulk-update-btn" class="btn btn-outline w-full md:w-auto">Bulk Update</button>
-        <button id="bulk-delete-btn" class="btn btn-error btn-outline w-full md:w-auto">Bulk Delete</button>
+        <div class="dropdown dropdown-end">
+          <button tabindex="0" role="button" class="btn btn-outline w-full md:w-auto">
+            Bulk Actions
+            <i data-lucide="chevron-down" class="w-4 h-4"></i>
+          </button>
+          <ul tabindex="0" id="bulk-update-options" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+            <!-- Options will be populated by JS -->
+          </ul>
+        </div>
+        <button id="bulk-delete-btn" class="btn btn-error btn-outline w-full md:w-auto">Delete Selected</button>
       </div>
     </div>
   </div>
@@ -54,13 +62,13 @@
               <th><input type="checkbox" class="checkbox checkbox-sm" id="select-all-accounts" /></th>
               <th>Name <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Status <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Robux <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Cost (PHP) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Cost Rate <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Robux (R$)<i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Cost (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Cost Rate (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Rate Sold ($) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Current USD to Peso <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Price (PHP) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Profit (PHP) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Dollar-Peso Rate<i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Price (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Profit (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Date Added <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Unpend Date <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Sold Date <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
@@ -71,13 +79,13 @@
               <th><input type="checkbox" class="checkbox checkbox-sm" id="select-all-accounts-fastflip" /></th>
               <th>Name <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th style="width: 50px;">Status <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Robux <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Cost (PHP) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Cost Rate <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Robux (R$) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Cost (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Cost Rate (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Rate Sold ($) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Current USD to Peso <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Price (PHP) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Profit (PHP) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Dollar-Peso Rate <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Price (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Profit (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Date Added <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Sold Date <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Actions</th>

@@ -262,4 +262,60 @@ document.addEventListener('DOMContentLoaded', () => {
     const mo = new MutationObserver(() => { if (isOpen) positionMenu(); });
     mo.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
   }
+
+  // Service Worker Registration
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(registration => {
+          console.log('Service Worker registered! Scope:', registration.scope);
+        })
+        .catch(err => {
+          console.log('Service Worker registration failed:', err);
+        });
+    });
+  }
+
+  // PWA Install Banner Logic
+  const pwaInstallBanner = document.getElementById('pwa-install-banner');
+  const installButton = pwaInstallBanner ? pwaInstallBanner.querySelector('button') : null;
+  let deferredPrompt;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (pwaInstallBanner) {
+      pwaInstallBanner.style.display = 'flex'; // Show the banner
+    }
+  });
+
+  if (installButton) {
+    installButton.addEventListener('click', () => {
+      if (pwaInstallBanner) {
+        pwaInstallBanner.style.display = 'none'; // Hide the banner
+      }
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the A2HS prompt');
+          } else {
+            console.log('User dismissed the A2HS prompt');
+          }
+          deferredPrompt = null;
+        });
+      }
+    });
+  }
+
+  window.addEventListener('appinstalled', () => {
+    if (pwaInstallBanner) {
+      pwaInstallBanner.style.display = 'none'; // Hide the banner once installed
+    }
+  });
+
+  // Check if already installed (for subsequent visits)
+  if (pwaInstallBanner && (navigator.standalone || window.matchMedia('(display-mode: standalone)').matches)) {
+    pwaInstallBanner.style.display = 'none';
+  }
 });

@@ -33,10 +33,10 @@ class AccountTransformer
       'cost_rate_php' => round($costRatePhp, 2), // Calculated on the fly
       'price_php' => $account->getPricePhp(),
       'profit_php' => $data['profit_php'], // Calculated from the model's constructor
-      'used_to_php_rate_on_sale' => $account->getUsdToPhpRateOnSale(),
+      'usd_to_php_rate_on_sale' => $account->getUsdToPhpRateOnSale(),
       'sold_rate_usd' => $account->getSoldRateUsd(),
-      'unpend_date' => $account->getUnpendDate(),
-      'sold_date' => $account->getSoldDate(),
+      'unpend_date' => $account->getUnpendDate()?->format('Y-m-d H:i:s'),
+      'sold_date' => $account->getSoldDate()?->format('Y-m-d H:i:s'),
       'date_added' => $createdAt?->format('Y-m-d H:i:s'),
       'date_updated' => $updatedAt?->format('Y-m-d H:i:s'),
       'date_deleted' => $deletedAt?->format('Y-m-d H:i:s'),

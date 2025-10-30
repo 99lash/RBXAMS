@@ -29,10 +29,25 @@ class AccountController
   public function getAccountsJson()
   {
     header('Content-Type: application/json');
+    $page = $_GET['page'] ?? 1;
+    $limit = $_GET['limit'] ?? 10;
     $sortBy = $_GET['sort_by'] ?? null;
     $sortOrder = $_GET['sort_order'] ?? 'asc'; // Default to ascending
-    $accounts = $this->accountService->getAllAccounts($sortBy, $sortOrder);
-    echo json_encode($accounts);
+    $search = $_GET['search'] ?? null;
+    $status = $_GET['status'] ?? null;
+    $accountType = $_GET['account_type'] ?? null;
+
+    $result = $this->accountService->getAllAccounts(
+      $this->currentUser['id'],
+      $page,
+      $limit,
+      $sortBy,
+      $sortOrder,
+      $search,
+      $status,
+      $accountType
+    );
+    echo json_encode($result);
     exit;
   }
 
@@ -125,7 +140,8 @@ class AccountController
   {
     $id = intval($id);
     $patchData = json_decode(file_get_contents("php://input"), true);
-    $response = $this->accountService->updateAccountById($id, $patchData);
+    // var_dump($patchData);
+    $response = $this->accountService->updateAccountById($this->currentUser['id'], $id, $patchData);
     header('Content-Type: application/json');
     echo json_encode(["success" => $response]);
   }
@@ -135,19 +151,19 @@ class AccountController
     header('Content-Type: application/json');
     $input = json_decode(file_get_contents('php://input'), true);
     $ids = $input['ids'] ?? [];
-    $statusId = $input['status'] ?? null;
+    $status = $input['status'] ?? null;
 
-    if (empty($ids) || !$statusId) {
+    if (empty($ids) || !$status) {
       http_response_code(400);
-      echo json_encode(['success' => false, 'detail' => 'Missing params'], JSON_PRETTY_PRINT);
+      echo json_encode(['success' => false, 'detail' => 'Missing required parameters: ids and status.'], JSON_PRETTY_PRINT);
       return;
     }
-    $response = $this->accountService->updateStatusBulk($ids, $statusId);
+    $response = $this->accountService->updateStatusBulk($ids, $status);
     if ($response) {
       echo json_encode(['success' => true, 'updated' => $ids], JSON_PRETTY_PRINT);
       return;
     }
-    echo json_encode(['success' => false], JSON_PRETTY_PRINT);
+    echo json_encode(['success' => false, 'detail' => 'Failed to update accounts.'], JSON_PRETTY_PRINT);
   }
 
   public function deleteBulk()

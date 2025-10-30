@@ -34,7 +34,7 @@ class HeroModel
     return $this;
   }
   public function setUpdatedAt(DateTimeImmutable $dateNow): HeroModel {
-    $this->created_at = $dateNow;
+    $this->updated_at = $dateNow;
     return $this;
   }
 }

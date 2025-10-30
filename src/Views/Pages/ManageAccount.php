@@ -15,7 +15,8 @@
 
   <!-- Tabs -->
   <div role="tablist" class="tabs tabs-boxed mb-4">
-    <a role="tab" class="tab tab-active" data-account-type="pending">Pending Accounts (<span id="pending-count">0</span>)</a>
+    <a role="tab" class="tab tab-active" data-account-type="pending">Pending Accounts (<span
+        id="pending-count">0</span>)</a>
     <a role="tab" class="tab" data-account-type="fastflip">Fastflip Accounts (<span id="fastflip-count">0</span>)</a>
   </div>
 
@@ -29,15 +30,23 @@
         </label>
 
         <select id="status-filter" class="select select-bordered w-full md:w-auto">
-          <option value="all">All Status</option>
+          <!-- <option value="all">All Status</option>
           <option value="Pending">Pending</option>
           <option value="Sold">Sold</option>
           <option value="Unpend">Unpend</option>
-          <option value="Retrieved">Retrieved</option>
+          <option value="Retrieved">Retrieved</option> -->
         </select>
 
-        <button id="bulk-update-btn" class="btn btn-outline w-full md:w-auto">Bulk Update</button>
-        <button id="bulk-delete-btn" class="btn btn-error btn-outline w-full md:w-auto">Bulk Delete</button>
+        <div class="dropdown dropdown-end">
+          <button tabindex="0" role="button" class="btn btn-outline w-full md:w-auto">
+            Bulk Actions
+            <i data-lucide="chevron-down" class="w-4 h-4"></i>
+          </button>
+          <ul tabindex="0" id="bulk-update-options" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+            <!-- Options will be populated by JS -->
+          </ul>
+        </div>
+        <button id="bulk-delete-btn" class="btn btn-error btn-outline w-full md:w-auto">Delete Selected</button>
       </div>
     </div>
   </div>
@@ -46,17 +55,37 @@
   <div class="card bg-base-200">
     <div class="card-body p-4">
       <div class="overflow-x-auto">
-        <table class="table table-zebra w-full">
-          <thead>
-            <tr>
+        <table class="table table-auto w-full">
+          <thead id="accounts-table-header">
+            <!-- Pending Accounts Header -->
+            <tr id="pending-header" class="account-header">
               <th><input type="checkbox" class="checkbox checkbox-sm" id="select-all-accounts" /></th>
               <th>Name <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Status <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Robux <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Cost PHP <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Cost Rate <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Price PHP <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Profit PHP <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Robux (R$)<i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Cost (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Cost Rate (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Rate Sold ($) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Dollar-Peso Rate<i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Price (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Profit (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Date Added <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Unpend Date <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Sold Date <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Actions</th>
+            </tr>
+            <!-- Fastflip Accounts Header -->
+            <tr id="fastflip-header" class="account-header hidden">
+              <th><input type="checkbox" class="checkbox checkbox-sm" id="select-all-accounts-fastflip" /></th>
+              <th>Name <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th style="width: 50px;">Status <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Robux (R$) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Cost (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Cost Rate (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Rate Sold ($) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Dollar-Peso Rate <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Price (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Profit (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Date Added <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Sold Date <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Actions</th>
@@ -68,7 +97,7 @@
         </table>
       </div>
       <div class="flex justify-center mt-4">
-        <div class="join" id="pagination-controls">
+        <div class="join flex justify-between w-full" id="pagination-controls">
           <!-- Pagination will be dynamically loaded here -->
         </div>
       </div>
@@ -84,7 +113,8 @@
           <label class="label">
             <span class="label-text">Roblox Account Cookies (one per line)</span>
           </label>
-          <textarea name="cookies" class="textarea textarea-bordered h-32 w-full" placeholder="<?= "Cookie1\nCookie2\nCookie3\n..."?>"></textarea>
+          <textarea name="cookies" class="textarea textarea-bordered h-32 w-full"
+            placeholder="<?= "Cookie1\nCookie2\nCookie3\n..." ?>"></textarea>
         </div>
         <div class="modal-action">
           <button type="submit" class="btn btn-primary">Add Account(s)</button>
@@ -119,13 +149,15 @@
           <label class="label">
             <span class="label-text">Cost PHP</span>
           </label>
-          <input type="number" step="0.01" id="edit-account-cost-php" name="cost_php" class="input input-bordered w-full" />
+          <input type="number" step="0.01" id="edit-account-cost-php" name="cost_php"
+            class="input input-bordered w-full" />
         </div>
         <div class="form-control w-full mt-4">
           <label class="label">
             <span class="label-text">Price PHP</span>
           </label>
-          <input type="number" step="0.01" id="edit-account-price-php" name="price_php" class="input input-bordered w-full" />
+          <input type="number" step="0.01" id="edit-account-price-php" name="price_php"
+            class="input input-bordered w-full" />
         </div>
         <div class="form-control w-full mt-4">
           <label class="label">

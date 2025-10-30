@@ -8,7 +8,11 @@ module.exports = {
     "./public_html/index.php",
   ],
   theme: {
-    extend: {},
+    extend: {
+      screens: {
+        'xs': '425px', // Custom breakpoint for extra small screens
+      }
+    },
   },
   plugins: [
     require("daisyui")

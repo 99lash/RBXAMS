@@ -41,7 +41,8 @@
 <?php elseif ($page != '/404' && $page != '/500'): ?>
   <!-- Default sidebar -->
   <aside id="sidebar" class="group sidebar bg-base-100 dark:bg-base-200 w-64 h-full flex flex-col justify-between
-    border-r border-base-300 transition-all duration-300 overflow-hidden">
+    fixed inset-y-0 left-0 z-[1500] transform -translate-x-full transition-transform duration-300 ease-in-out
+    md:relative md:translate-x-0 md:flex border-r border-base-300 overflow-hidden md:transition-all">
 
     <div>
       <!-- Branding -->
@@ -89,8 +90,7 @@
            group-[.collapsed]:rounded-none
            group-[.collapsed]:bg-transparent
            group-[.collapsed]:border-none
-           group-[.collapsed]:shadow-none"
-           aria-expanded="false" aria-controls="userMenu">
+           group-[.collapsed]:shadow-none" aria-expanded="false" aria-controls="userMenu">
         <div class="avatar placeholder">
           <div class="bg-neutral text-neutral-content rounded-full w-8 flex items-center justify-center">
             <span class="text-sm">ASH</span>
@@ -104,13 +104,13 @@
 
       <!-- Hidden template for the dropdown content. We'll portal this into body on open -->
       <template id="userMenuTemplate">
-        <ul id="userMenu" class="menu p-2 shadow border border-base-300 bg-base-100/95 rounded-box z-[2000] w-60"
+        <ul id="userMenu" class="menu p-2 shadow border border-base-300 bg-base-100/95 rounded-box z-[2000] w-48 lg:w-60"
           role="menu" style="position:fixed; display:block; visibility:hidden;">
-          <li><a href="#" role="menuitem"><i data-lucide="bell" class="w-4 h-4 inline-block mr-2"></i>Notifications</a>
+          <!-- <li><a href="#" role="menuitem"><i data-lucide="bell" class="w-4 h-4 inline-block mr-2"></i>Notifications</a> -->
           </li>
           <li>
             <form method="POST" action="/logout" class="w-full flex">
-              <button type="submit" class="flex flex-1 items-center gap-2" role="menuitem">
+              <button type="submit" class="flex flex-1 items-center gap-2 bg-error/50 border border-error rounded-md px-2 p-1 cursor-pointer" role="menuitem">
                 <i data-lucide="log-out" class="w-4 h-4 inline-block mr-2"></i>Logout
               </button>
             </form>

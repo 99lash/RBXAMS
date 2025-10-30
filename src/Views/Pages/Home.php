@@ -1,7 +1,7 @@
 <div class="p-6">
 	<!-- Install Banner -->
-	<div class="bg-primary/10 border border-primary p-4 rounded-lg flex justify-between items-center mb-6">
-		<div class="flex items-center gap-4">
+	<div id="pwa-install-banner" class="bg-primary/10 border border-primary p-4 rounded-lg flex flex-col lg:flex-row justify-between items-center mb-6">
+		<div class="flex items-center gap-4 mb-4 flex-wrap md:flex-nowrap">
 			<div class="p-2 border border-dotted border-primary rounded-lg">
 				<i data-lucide="line-chart" class="w-6 h-6 text-primary"></i>
 			</div>

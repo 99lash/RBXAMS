@@ -2,8 +2,8 @@
   <!-- Header -->
   <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
     <div>
-      <h1 class="text-2xl font-bold">Manage Accounts</h1>
-      <p class="text-base-content/70">Add, view, edit, and manage your ROBLOX accounts with advanced features</p>
+      <h1 class="text-xl sm:text-2xl font-bold">Manage Accounts</h1>
+      <p class="text-sm sm:text-base text-base-content/70">Add, view, edit, and manage your ROBLOX accounts with advanced features</p>
     </div>
     <div class="flex items-center gap-2">
       <button class="btn btn-primary" onclick="add_account_modal.showModal()">
@@ -14,10 +14,10 @@
   </div>
 
   <!-- Tabs -->
-  <div role="tablist" class="tabs tabs-boxed mb-4">
-    <a role="tab" class="tab tab-active" data-account-type="pending">Pending Accounts (<span
+  <div role="tablist" class="tabs tabs-border mb-4 gap-1 sm:gap-0">
+    <a role="tab" class="tab p-0 sm:px-2 tab-active" data-account-type="pending">Pending Accounts (<span
         id="pending-count">0</span>)</a>
-    <a role="tab" class="tab" data-account-type="fastflip">Fastflip Accounts (<span id="fastflip-count">0</span>)</a>
+    <a role="tab" class="tab p-0 sm:px-2" data-account-type="fastflip">Fastflip Accounts (<span id="fastflip-count">0</span>)</a>
   </div>
 
   <!-- Account List Controls -->
@@ -78,7 +78,7 @@
             <tr id="fastflip-header" class="account-header hidden">
               <th><input type="checkbox" class="checkbox checkbox-sm" id="select-all-accounts-fastflip" /></th>
               <th>Name <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th style="width: 50px;">Status <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th>Status <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Robux (R$) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Cost (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Cost Rate (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>

@@ -179,4 +179,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	} initializeCharts();
 	fetchData(); // Initial data fetch
+
+	// PWA Install Banner Logic
+	const pwaInstallBanner = document.getElementById('pwa-install-banner');
+	const installButton = pwaInstallBanner ? pwaInstallBanner.querySelector('button') : null;
+	let deferredPrompt;
+
+	// Check if already installed on page load or from localStorage
+	let isAppInstalled = (navigator.standalone || window.matchMedia('(display-mode: standalone)').matches || localStorage.getItem('pwaInstalled') === 'true');
+
+	if (pwaInstallBanner) {
+		if (isAppInstalled) {
+			pwaInstallBanner.style.display = 'none';
+		}
+
+		// Only add the beforeinstallprompt listener if the app is not installed
+		if (!isAppInstalled) {
+			window.addEventListener('beforeinstallprompt', (e) => {
+				e.preventDefault();
+				deferredPrompt = e;
+				pwaInstallBanner.style.display = 'flex'; // Show the banner
+			});
+		}
+
+		if (installButton) {
+			installButton.addEventListener('click', () => {
+				pwaInstallBanner.style.display = 'none'; // Hide the banner
+				if (deferredPrompt) {
+					deferredPrompt.prompt();
+					deferredPrompt.userChoice.then((choiceResult) => {
+						if (choiceResult.outcome === 'accepted') {
+							console.log('User accepted the A2HS prompt');
+							localStorage.setItem('pwaInstalled', 'true'); // Persist installation status
+						} else {
+							console.log('User dismissed the A2HS prompt');
+						}
+						deferredPrompt = null;
+					});
+				}
+			});
+		}
+
+		window.addEventListener('appinstalled', (e) => {
+			console.log(e);
+			console.log('meow');
+			isAppInstalled = true; // Update the flag
+			localStorage.setItem('pwaInstalled', 'true'); // Persist installation status
+			pwaInstallBanner.style.display = 'none'; // Hide the banner once installed
+		});
+	}
+
 });

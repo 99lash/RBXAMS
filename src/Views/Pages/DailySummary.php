@@ -2,8 +2,8 @@
   <!-- Header -->
   <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
     <div>
-      <h1 class="text-2xl font-bold">Daily Activity Summary</h1>
-      <p class="text-base-content/70">Track your daily trading performance and export reports</p>
+      <h1 class="text-xl sm:text-2xl font-bold">Daily Activity Summary</h1>
+      <p class="text-sm sm:text-base text-base-content/70">Track your daily trading performance and export reports</p>
     </div>
     <div class="flex items-center gap-2">
       <div class="dropdown dropdown-end">
@@ -35,14 +35,14 @@
   <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
     <div class="card bg-base-200">
       <div class="card-body">
-        <h2 class="card-title text-base-content/60">Total Robux Bought (R$)</h2>
-        <p class="text-3xl font-bold" id="total-robux-bought">0</p>
+        <h2 class="card-title text-base sm:text-lg text-base-content/60">Total Robux Bought (R$)</h2>
+        <p class="text-2xl sm:text-3xl font-bold" id="total-robux-bought">0</p>
         <p class="text-sm text-base-content/50" id="total-robux-bought-breakdown">P: 0 | F: 0</p>
       </div>
     </div>
     <div class="card bg-base-200">
       <div class="card-body">
-        <h2 class="card-title text-base-content/60">Total Robux Sold (R$)</h2>
+        <h2 class="card-title text-base sm:text-lg text-base-content/60</h2>
         <p class="text-3xl font-bold" id="total-robux-sold">0</p>
         <p class="text-sm text-base-content/50" id="total-robux-sold-breakdown">P: 0 | F: 0</p>
       </div>

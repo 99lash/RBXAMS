@@ -54,28 +54,97 @@ function themeSwitcher(e) {
 
 themeSwitcher(currentTheme);
 
-/* Sidebar minimize & maximize functionality */
+/* Sidebar functionality */
 document.addEventListener('DOMContentLoaded', () => {
   const sidebar = document.getElementById('sidebar');
   const toggleSidebarButton = document.getElementById('toggle-sidebar');
+  let overlay = null;
 
-  if (sidebar) { // Add this check
-    // Load state from localStorage
-    if (localStorage.getItem('sidebar') === 'collapsed') {
-      sidebar.classList.remove('w-64');
-      sidebar.classList.add('w-16', 'collapsed');
+  // Function to create and show overlay
+  function showOverlay() {
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'sidebar-overlay';
+      overlay.className = 'fixed inset-0 bg-base-300/50 z-40 md:hidden'; // Tailwind classes for overlay
+      document.body.appendChild(overlay);
+      overlay.addEventListener('click', hideMobileSidebar); // Close sidebar when overlay is clicked
+    }
+    overlay.classList.remove('hidden');
+  }
+
+  // Function to hide and remove overlay
+  function hideOverlay() {
+    if (overlay) {
+      overlay.classList.add('hidden');
+    }
+  }
+
+  // Function to show sidebar (mobile)
+  function openMobileSidebar() {
+    sidebar.classList.remove('-translate-x-full');
+    sidebar.classList.add('translate-x-0');
+    showOverlay();
+  }
+
+  // Function to hide sidebar (mobile)
+  function hideMobileSidebar() {
+    sidebar.classList.remove('translate-x-0');
+    sidebar.classList.add('-translate-x-full');
+    hideOverlay();
+  }
+
+  // Main sidebar toggle logic
+  if (sidebar && toggleSidebarButton) {
+    // Initial state setup for desktop/tablet
+    if (window.innerWidth >= 768) { // md breakpoint
+      if (localStorage.getItem('sidebar') === 'collapsed') {
+        sidebar.classList.add('w-16', 'collapsed');
+        sidebar.classList.remove('w-64', '-translate-x-full', 'translate-x-0');
+      } else {
+        sidebar.classList.add('w-64');
+        sidebar.classList.remove('w-16', 'collapsed', '-translate-x-full', 'translate-x-0');
+      }
+    } else { // Mobile view initial state
+      sidebar.classList.add('-translate-x-full'); // Ensure it's hidden by default on mobile
+      sidebar.classList.remove('w-64', 'w-16', 'collapsed', 'translate-x-0');
     }
 
-    if (toggleSidebarButton) {
-      toggleSidebarButton.addEventListener('click', () => {
+    toggleSidebarButton.addEventListener('click', () => {
+      if (window.innerWidth < 768) { // Mobile view
+        if (sidebar.classList.contains('translate-x-0')) {
+          hideMobileSidebar();
+        } else {
+          openMobileSidebar();
+        }
+      } else { // Desktop/Tablet view
         const isCollapsed = sidebar.classList.toggle('collapsed');
         sidebar.classList.toggle('w-64', !isCollapsed);
         sidebar.classList.toggle('w-16', isCollapsed);
-
-        // Save state
         localStorage.setItem('sidebar', isCollapsed ? 'collapsed' : 'expanded');
-      });
-    }
+      }
+    });
+
+    // Handle screen resize
+    window.addEventListener('resize', () => {
+      if (overlay && !overlay.classList.contains('hidden') && window.innerWidth >= 768) {
+        hideMobileSidebar(); // Hide mobile sidebar and overlay if resizing to desktop
+      }
+
+      // Reapply desktop/tablet state if resizing to desktop
+      if (window.innerWidth >= 768) {
+        if (localStorage.getItem('sidebar') === 'collapsed') {
+          sidebar.classList.add('w-16', 'collapsed');
+          sidebar.classList.remove('w-64', '-translate-x-full', 'translate-x-0');
+        } else {
+          sidebar.classList.add('w-64');
+          sidebar.classList.remove('w-16', 'collapsed', '-translate-x-full', 'translate-x-0');
+        }
+      } else { // Ensure mobile state when resizing to mobile
+        sidebar.classList.add('-translate-x-full');
+        sidebar.classList.remove('w-64', 'w-16', 'collapsed', 'translate-x-0');
+        hideOverlay(); // Ensure overlay is hidden on mobile if not explicitly open
+      }
+    });
   }
 
   // User dropdown logic

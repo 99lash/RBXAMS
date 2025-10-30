@@ -56,9 +56,9 @@ class AccountService
 			->setRobux($status == AccountType::PENDING ? $data['pendingRobuxTotal'] : $data['robux']);
 
 		$success = $this->accountRepo->create($account);
-		if ($success) {
-			$this->summaryService->recomputeDailySummary($account->getUserId(), (new \DateTime())->format('Y-m-d'));
-		}
+		// if ($success) {
+		// 	$this->summaryService->recomputeDailySummary($account->getUserId(), (new \DateTime())->format('Y-m-d'));
+		// }
 		return $success;
 	}
 
@@ -96,8 +96,9 @@ class AccountService
 			unset($patchData['status']);
 		}
 
+		$revertSoldDate = null;
 		if (isset($patchData['revert_sold']) && $patchData['revert_sold']) {
-			return $this->handleRevertSoldTransaction($userId, $id, "Reverted from Sold to Unpend by user");
+			$revertSoldDate = $this->handleRevertSoldTransaction($userId, $id, "Reverted from Sold to Unpend by user");
 		}
 
 		if (isset($patchData['cost_php']) && $patchData['cost_php'] != $originalAccountModel->getCostPhp()) {
@@ -123,8 +124,9 @@ class AccountService
 		$updateSuccess = $this->accountRepo->updatePartial($account);
 
 		// Recompute daily summary if any transaction-related data was updated
-		if (isset($patchData['cost_php']) || isset($patchData['account_status_id']) || isset($patchData['revert_sold'])) {
-			$this->summaryService->recomputeDailySummary($userId, date('Y-m-d'));
+		if (isset($patchData['cost_php']) || isset($patchData['account_status_id']) || $revertSoldDate !== null) {
+			$summaryDate = $revertSoldDate ?? date('Y-m-d');
+			$this->summaryService->recomputeDailySummary($userId, $summaryDate);
 		}
 
 		return $updateSuccess;
@@ -172,13 +174,13 @@ class AccountService
 		}
 	}
 
-	private function handleRevertSoldTransaction(string $userId, string $accountId, string $reason)
+	private function handleRevertSoldTransaction(string $userId, string $accountId, string $reason): ?string
 	{
 		$this->transactionRepo->beginTransaction();
 		try {
 			$activeSellTxn = $this->transactionRepo->findActiveTransaction($accountId, 'SELL');
 			if ($activeSellTxn) {
-				$this->transactionRepo->voidTransaction($activeSellTxn['transaction_id'], $reason);
+				$voidSuccess = $this->transactionRepo->voidTransaction($activeSellTxn['transaction_id'], $reason);
 
 				$unpendStatusId = $this->accountRepo->findAccountStatusId('unpend');
 				$account = new AccountModel($accountId);
@@ -186,15 +188,14 @@ class AccountService
 				$account->setSoldDate(null);
 				$this->accountRepo->updatePartial($account);
 
-				$transactionDate = (new \DateTime($activeSellTxn['transaction_date']))->format('Y-m-d');
-				$this->summaryService->recomputeDailySummary($userId, $transactionDate);
+				$transactionDate = (new \DateTime($activeSellTxn['created_at']))->format('Y-m-d');
+
+				$this->transactionRepo->commit();
+				return $transactionDate;
 			} else {
 				$this->transactionRepo->rollback();
-				return false;
+				return null;
 			}
-
-			$this->transactionRepo->commit();
-			return true;
 		} catch (\Exception $e) {
 			$this->transactionRepo->rollback();
 			throw $e;

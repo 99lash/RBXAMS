@@ -84,12 +84,12 @@ class TransactionRepository
 
 	public function findActiveTransactionsByDate(string $userId, string $date): array
 	{
-		$stmt = $this->mysqli->prepare(
-			"SELECT * FROM transactions WHERE user_id = ? AND DATE(created_at) = ? AND txn_status = 'active' AND (transaction_type = 'BUY' OR transaction_type = 'SELL')"
-		);
+		$sql = "SELECT * FROM transactions WHERE user_id = ? AND DATE(created_at) = ? AND txn_status = 'active' AND (transaction_type = 'BUY' OR transaction_type = 'SELL')";
+		$stmt = $this->mysqli->prepare($sql);
 		$stmt->bind_param("ss", $userId, $date);
 		$stmt->execute();
 		$result = $stmt->get_result();
-		return $result->fetch_all(MYSQLI_ASSOC);
+		$transactions = $result->fetch_all(MYSQLI_ASSOC);
+		return $transactions;
 	}
 }

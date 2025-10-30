@@ -290,7 +290,6 @@ class SummaryService
 		foreach ($transactions as $transaction) {
 			$accountData = $this->accountRepo->findById($transaction['account_id']);
 			if (!$accountData) {
-				error_log("Account not found for transaction ID: " . $transaction['transaction_id']);
 				continue;
 			}
 			$account = $accountData['model'];

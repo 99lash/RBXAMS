@@ -335,6 +335,7 @@ document.addEventListener('DOMContentLoaded', () => {
           const account = allAccounts.find(acc => acc.id == accountId);
           if (account && account.status.toLowerCase() === 'sold' && (value.toLowerCase() === 'unpend' || value.toLowerCase() === 'retrieved')) {
             updateData.sold_date = null;
+            updateData.revert_sold = true;
           }
         }
 
@@ -563,6 +564,15 @@ document.addEventListener('DOMContentLoaded', () => {
       .map(cb => cb.dataset.id);
     if (selectedIds.length === 0) {
       showToast('No accounts selected for bulk delete.', 'warning');
+      return;
+    }
+
+    const accountsToDelete = allAccounts.filter(acc => selectedIds.includes(String(acc.id)));
+    const protectedAccounts = accountsToDelete.filter(acc => acc.status.toLowerCase() === 'sold' || acc.status.toLowerCase() === 'retrieved');
+
+    if (protectedAccounts.length > 0) {
+      const protectedNames = protectedAccounts.map(acc => acc.name).join(', ');
+      showToast(`Cannot delete selected accounts. Accounts in 'Sold' or 'Retrieved' status cannot be bulk deleted: ${protectedNames}.`, 'error');
       return;
     }
 

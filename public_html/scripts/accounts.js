@@ -150,8 +150,8 @@ const fetchAccounts = async (preservePage = false) => {
 
     // Update allAccounts with the current page's data
     // This assumes backend handles filtering/sorting completely
-    allAccounts = result.data; 
-    
+    allAccounts = result.data;
+
     // allAccounts = result.data.filter(account => {
     //   const type = account.account_type.toLowerCase();
     //   return currentAccountType === 'pending' ? type === 'pending' : type !== 'pending';
@@ -477,6 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
       tab.classList.add('tab-active');
       currentAccountType = tab.dataset.accountType;
       renderBulkUpdateDropdown();
+      switchTableHeader(); // Switch table header and status filter
       applyFiltersAndRender();
       // Re-attach select all checkbox listener
       attachSelectAllListener();
@@ -546,7 +547,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const payload = {ids: selectedIds, status: status};
+      const payload = { ids: selectedIds, status: status };
 
       if (status === 'unpend' || status === 'retrieved') {
         const accountsToUpdate = allAccounts.filter(acc => selectedIds.includes(String(acc.id)));
@@ -706,7 +707,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // --- Initial Load ---
   fetchExchangeRate().then(() => {
-    renderBulkUpdateDropdown(); // Add this
+    renderBulkUpdateDropdown();
+    switchTableHeader(); // Initialize status filter and table header
     fetchAccounts();
   });
 });

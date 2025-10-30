@@ -104,13 +104,13 @@
 
       <!-- Hidden template for the dropdown content. We'll portal this into body on open -->
       <template id="userMenuTemplate">
-        <ul id="userMenu" class="menu p-2 shadow border border-base-300 bg-base-100/95 rounded-box z-[2000] w-60"
+        <ul id="userMenu" class="menu p-2 shadow border border-base-300 bg-base-100/95 rounded-box z-[2000] w-48 lg:w-60"
           role="menu" style="position:fixed; display:block; visibility:hidden;">
           <!-- <li><a href="#" role="menuitem"><i data-lucide="bell" class="w-4 h-4 inline-block mr-2"></i>Notifications</a> -->
           </li>
           <li>
             <form method="POST" action="/logout" class="w-full flex">
-              <button type="submit" class="flex flex-1 items-center gap-2" role="menuitem">
+              <button type="submit" class="flex flex-1 items-center gap-2 bg-error/50 border border-error rounded-md px-2 p-1" role="menuitem">
                 <i data-lucide="log-out" class="w-4 h-4 inline-block mr-2"></i>Logout
               </button>
             </form>

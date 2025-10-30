@@ -1,15 +1,15 @@
 <div class="p-4">
-  <h1 class="text-2xl font-bold mb-2">User Guide</h1>
-  <p class="text-base-content/70 mb-6">
+  <h1 class="text-xl sm:text-2xl font-bold mb-2">User Guide</h1>
+  <p class="text-sm sm:text-base text-base-content/70 mb-6">
     Complete guide to using the Roblox Asset Monitoring System (RBXAMS)
   </p>
 
   <!-- Tabs -->
-  <div role="tablist" class="tabs tabs-bordered w-full">
-    <a role="tab" class="tab tab-active" id="tab-started">Getting Started</a>
-    <a role="tab" class="tab" id="tab-features">Features</a>
-    <a role="tab" class="tab" id="tab-management">Account Management</a>
-    <a role="tab" class="tab" id="tab-faq">FAQ</a>
+  <div role="tablist" class="tabs tabs-border w-full">
+    <a role="tab" class="tab tab-active text-sm sm:text-base font-semibold" id="tab-started">Getting Started</a>
+    <a role="tab" class="tab text-sm sm:text-base font-semibold" id="tab-features">Features</a>
+    <a role="tab" class="tab font-semibold" id="tab-management">Account Management</a>
+    <a role="tab" class="tab font-semibold" id="tab-faq">FAQ</a>
   </div>
 
   <!-- Tab Content -->
@@ -30,11 +30,11 @@
             View real-time statistics including total accounts, robux amounts, expenses, and profits all in one
             centralized dashboard.
           </li>
-          <li>
+          <!-- <li>
             <b>Manage Account Status</b><br>
             Use the "Manage Accounts" section to update account statuses, set unpend dates, and track profit/loss for
             each account.
-          </li>
+          </li> -->
           <li>
             <b>Review Daily Summary</b><br>
             Check your daily activity summary for detailed reports and analytics with export options.
@@ -63,9 +63,9 @@
         <div class="bg-base-100 p-6 rounded-xl shadow border border-base-300">
           <h2 class="font-semibold mb-4">Dashboard Analytics</h2>
           <ul class="list-disc list-inside space-y-2">
-            <li>Real-time account statistics</li>
+            <!-- <li>Real-time account statistics</li> -->
             <li>Daily activity tracking</li>
-            <li>Profit/loss calculations</li>
+            <!-- <li>Profit/loss calculations</li> -->
             <li>Visual charts and graphs</li>
             <li>Performance metrics</li>
           </ul>
@@ -76,7 +76,7 @@
             <li>Import multiple accounts at once</li>
             <li>Automatic account type detection</li>
             <li>Cookie-based authentication</li>
-            <li>Real-time balance fetching</li>
+            <!-- <li>Real-time balance fetching</li> -->
             <li>Automatic cost calculations</li>
           </ul>
         </div>
@@ -87,7 +87,7 @@
             <li>Bulk status updates</li>
             <li>Bulk delete functionality</li>
             <li>Inline editing</li>
-            <li>Advanced sorting & filtering</li>
+            <li>Field sorting & filtering</li>
           </ul>
         </div>
         <div class="bg-base-100 p-6 rounded-xl shadow border border-base-300">
@@ -95,7 +95,7 @@
           <ul class="list-disc list-inside space-y-2">
             <li>Automatic status changes</li>
             <li>Unpend date scheduling</li>
-            <li>Real-time notifications</li>
+            <!-- <li>Real-time notifications</li> -->
             <li>Daily activity summaries</li>
             <li>Export capabilities</li>
           </ul>
@@ -168,7 +168,7 @@
             How do I add multiple accounts at once?
           </div>
           <div class="collapse-content">
-            <p>Navigate to "Add Account" and paste multiple Roblox cookies in the textarea, one per line. The system
+            <p class="text-secondary-content/50">Navigate to "Add Account" and paste multiple Roblox cookies in the textarea, one per line. The system
               will automatically process each cookie and create accounts with proper naming and type detection.</p>
           </div>
         </div>
@@ -179,7 +179,7 @@
             What's the difference between Pending and Fastflip accounts?
           </div>
           <div class="collapse-content">
-            <p>Pending accounts have incoming Robux transactions and need time to clear before use. Fastflip accounts
+            <p class="text-secondary-content/50">Pending accounts have incoming Robux transactions and need time to clear before use. Fastflip accounts
               don't have pending transactions and can be used immediately for transactions.</p>
           </div>
         </div>
@@ -190,7 +190,7 @@
             How does automatic status changing work?
           </div>
           <div class="collapse-content">
-            <p>Set an "Unpend date" for Pending accounts. The system checks every minute and automatically changes the
+            <p class="text-secondary-content/50">Set an "Unpend date" for Pending accounts. The system checks every minute and automatically changes the
               status from "Pending" to "Unpend" when the date is reached.</p>
           </div>
         </div>
@@ -201,21 +201,21 @@
             Can I edit account information after adding?
           </div>
           <div class="collapse-content">
-            <p>Yes! You can use inline editing by clicking on any editable field in the table, or use the edit dialog
+            <p class="text-secondary-content/50">Yes! You can use inline editing by clicking on any editable field in the table, or use the edit dialog
               for more comprehensive changes. Cost rates are automatically recalculated.</p>
           </div>
         </div>
-
+        <!-- 
         <div class="collapse collapse-arrow bg-base-200 mb-2">
           <input type="radio" name="my-accordion-4" />
           <div class="collapse-title text-xl font-medium">
             Is my data secure?
           </div>
           <div class="collapse-content">
-            <p>All data is stored locally in your browser. Nothing is sent to external servers. Your authentication
+            <p class="text-secondary-content/50">All data is stored locally in your browser. Nothing is sent to external servers. Your authentication
               cookies and account information remain on your device only.</p>
           </div>
-        </div>
+        </div> -->
 
         <div class="collapse collapse-arrow bg-base-200 mb-2">
           <input type="radio" name="my-accordion-4" />
@@ -223,7 +223,7 @@
             Can I install this as an app?
           </div>
           <div class="collapse-content">
-            <p>Yes! RBXAMS is a Progressive Web App (PWA). You can install it on your desktop or mobile device for a
+            <p class="text-secondary-content/50">Yes! RBXAMS is a Progressive Web App (PWA). You can install it on your desktop or mobile device for a
               native app-like experience. Look for the install banner or use your browser's install option.</p>
           </div>
         </div>

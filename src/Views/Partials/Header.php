@@ -1,5 +1,5 @@
 <?php if ($page != '/login'): ?>
-  <header class="border-b border-base-300 flex justify-between items-center px-4 py-3 sticky top-0 z-[1000] bg-base-100">
+  <header class="border-b border-base-300 flex justify-between items-center px-4 py-3 sticky top-0 z-[1000] bg-gradient-to-l from-secondary/20 to-secondary/5 backdrop-blur-sm">
     <?php if ($page != '/404' && $page != '/404'): ?>
       <!-- Left: Sidebar toggle and breadcrumbs -->
       <div class="flex items-center gap-2">
@@ -33,7 +33,7 @@
     <div class="flex items-center gap-4">
       <!-- Theme toggle -->
       <div class="dropdown dropdown-end">
-        <label tabindex="0" class="btn btn-sm bg-base-500 border-1 border-base-300">
+        <label tabindex="0" class="btn btn-sm btn-ghost border-1 border-base-300">
           <i id="theme-icon" data-lucide="sun" class="w-4 h-4"></i>
         </label>
         <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-200 rounded-box w-40">

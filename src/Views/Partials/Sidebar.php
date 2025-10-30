@@ -41,7 +41,7 @@
 <?php elseif ($page != '/404' && $page != '/500'): ?>
   <!-- Default sidebar -->
   <aside id="sidebar" class="group sidebar bg-base-100 dark:bg-base-200 w-64 h-full flex flex-col justify-between
-    fixed inset-y-0 left-0 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out
+    fixed inset-y-0 left-0 z-[99999] transform -translate-x-full transition-transform duration-300 ease-in-out
     md:relative md:translate-x-0 md:flex border-r border-base-300 overflow-hidden md:transition-all">
 
     <div>
@@ -110,7 +110,7 @@
           </li>
           <li>
             <form method="POST" action="/logout" class="w-full flex">
-              <button type="submit" class="flex flex-1 items-center gap-2 bg-error/50 border border-error rounded-md px-2 p-1" role="menuitem">
+              <button type="submit" class="flex flex-1 items-center gap-2 bg-error/50 border border-error rounded-md px-2 p-1 cursor-pointer" role="menuitem">
                 <i data-lucide="log-out" class="w-4 h-4 inline-block mr-2"></i>Logout
               </button>
             </form>

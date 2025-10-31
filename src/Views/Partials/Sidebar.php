@@ -19,11 +19,10 @@
           </span>
           <div>
             <h3 class="font-semibold text-gray-900 dark:text-gray-100">Track Your Profits</h3>
-            <p class="text-gray-600 dark:text-gray-400 text-sm">Monitor your ROBLOX account investments and returns in
-              real-time</p>
+            <p class="text-gray-600 dark:text-gray-400 text-sm">Manage your ROBLOX account investments and returns with just a few tweaks</p>
           </div>
         </div>
-        <div class="flex items-center gap-3">
+        <!-- <div class="flex items-center gap-3">
           <span class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-300 dark:bg-gray-700">
             <i data-lucide="shield-check" class="w-5 h-5 text-gray-100"></i>
           </span>
@@ -31,7 +30,7 @@
             <h3 class="font-semibold text-gray-900 dark:text-gray-100">Secure & Reliable</h3>
             <p class="text-gray-600 dark:text-gray-400 text-sm">Your data is stored locally and securely managed</p>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
 

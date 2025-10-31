@@ -109,8 +109,8 @@
           <!-- <li><a href="#" role="menuitem"><i data-lucide="bell" class="w-4 h-4 inline-block mr-2"></i>Notifications</a> -->
           </li>
           <li>
-            <form method="POST" action="/logout" class="w-full flex">
-              <button type="submit" class="flex flex-1 items-center gap-2 bg-error/50 border border-error rounded-md px-2 p-1 cursor-pointer" role="menuitem">
+            <form method="POST" action="/logout" class="w-full flex bg-error/50 border border-error rounded-md px-2 p-1 cursor-pointer hover:bg-error/40">
+              <button type="submit" class="flex flex-1 items-center gap-2 cursor-pointer" role="menuitem">
                 <i data-lucide="log-out" class="w-4 h-4 inline-block mr-2"></i>Logout
               </button>
             </form>

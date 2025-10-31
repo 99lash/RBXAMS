@@ -80,17 +80,29 @@ class UserRepository
     $row = $stmt->get_result()->fetch_assoc();
     if ($row) {
       return UserModel::fromArray($row);
-      // return new UserModel(
-      //   $row['id'],
-      //   $row['user_role_id'],
-      //   $row['name'],
-      //   $row['email'],
-      //   $row['password'],
-      //   $row['profile_pic_url'] || null
-      // );
     }
     return null;
   }
+
+  public function findByEmail(string $email): ?UserModel
+  {
+    $stmt = $this->mysqli->prepare("SELECT * FROM users WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    if ($row) {
+      return UserModel::fromArray($row);
+    }
+    return null;
+  }
+
+  public function updatePassword(int $userId, string $hashedPassword): bool
+  {
+    $stmt = $this->mysqli->prepare("UPDATE users SET password = ? WHERE id = ?");
+    $stmt->bind_param("si", $hashedPassword, $userId);
+    return $stmt->execute();
+  }
+
   public function create($id, $userRoleId=1, $name, $email, $hashed_password, $profilePicUrl) {
     $query = "
       INSERT INTO
@@ -115,7 +127,7 @@ class UserRepository
 
     // get_object_vars can see private props only inside the same class,
     // but here we call from Repository, so use jsonSerialize
-    $data = $user->toArray();
+    $data = $user->jsonSerialize();
 
     foreach ($data as $column => $value) {
       if ($column === "id") {

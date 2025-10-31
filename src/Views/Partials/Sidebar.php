@@ -38,7 +38,7 @@
     <!-- Image -->
     <img src="/assets/coins.jpeg" alt="Coins" class="rounded-xl shadow-md">
   </div>
-<?php elseif ($page != '/404' && $page != '/500'): ?>
+<?php elseif ($page != '/404' && $page != '/500' && $page != '/forgot-password' && $page != '/reset-password'): ?>
   <!-- Default sidebar -->
   <aside id="sidebar" class="group sidebar bg-base-100 dark:bg-base-200 w-64 h-full flex flex-col justify-between
     fixed inset-y-0 left-0 z-[1500] transform -translate-x-full transition-transform duration-300 ease-in-out

@@ -83,6 +83,14 @@ if (property_exists($this, 'currentUser')) {
               require 'Pages/Guide.php';
               break;
 
+            case '/forgot-password':
+              require 'Pages/ForgotPassword.php';
+              break;
+
+            case '/reset-password':
+              require 'Pages/ResetPassword.php';
+              break;
+
             // case '/register':
             //   require 'Pages/Register.php';
             //   break;

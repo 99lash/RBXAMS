@@ -42,7 +42,7 @@
     </div>
     <div class="card bg-base-200">
       <div class="card-body">
-        <h2 class="card-title text-base sm:text-lg text-base-content/60</h2>
+        <h2 class="card-title text-base sm:text-lg text-base-content/60">Total Robux Sold (R$)</h2>
         <p class="text-3xl font-bold" id="total-robux-sold">0</p>
         <p class="text-sm text-base-content/50" id="total-robux-sold-breakdown">P: 0 | F: 0</p>
       </div>

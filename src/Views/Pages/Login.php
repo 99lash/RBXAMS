@@ -43,6 +43,9 @@ use App\Utils\Flash;
         <label class="label"><span class="label-text">Password</span></label>
         <input type="password" name="password" class="input input-bordered w-full" placeholder="Enter your password"
           required>
+        <label class="label">
+          <a href="/forgot-password" class="label-text-alt link link-hover">Forgot password?</a>
+        </label>
       </div>
       <button type="submit" class="btn btn-primary w-full">Sign In</button>
     </form>

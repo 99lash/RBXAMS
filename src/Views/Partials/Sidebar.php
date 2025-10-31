@@ -19,11 +19,10 @@
           </span>
           <div>
             <h3 class="font-semibold text-gray-900 dark:text-gray-100">Track Your Profits</h3>
-            <p class="text-gray-600 dark:text-gray-400 text-sm">Monitor your ROBLOX account investments and returns in
-              real-time</p>
+            <p class="text-gray-600 dark:text-gray-400 text-sm">Manage your ROBLOX account investments and returns with just a few tweaks</p>
           </div>
         </div>
-        <div class="flex items-center gap-3">
+        <!-- <div class="flex items-center gap-3">
           <span class="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-300 dark:bg-gray-700">
             <i data-lucide="shield-check" class="w-5 h-5 text-gray-100"></i>
           </span>
@@ -31,14 +30,14 @@
             <h3 class="font-semibold text-gray-900 dark:text-gray-100">Secure & Reliable</h3>
             <p class="text-gray-600 dark:text-gray-400 text-sm">Your data is stored locally and securely managed</p>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
 
     <!-- Image -->
     <img src="/assets/coins.jpeg" alt="Coins" class="rounded-xl shadow-md">
   </div>
-<?php elseif ($page != '/404' && $page != '/500'): ?>
+<?php elseif ($page != '/404' && $page != '/500' && $page != '/forgot-password' && $page != '/reset-password'): ?>
   <!-- Default sidebar -->
   <aside id="sidebar" class="group sidebar bg-base-100 dark:bg-base-200 w-64 h-full flex flex-col justify-between
     fixed inset-y-0 left-0 z-[1500] transform -translate-x-full transition-transform duration-300 ease-in-out
@@ -109,8 +108,8 @@
           <!-- <li><a href="#" role="menuitem"><i data-lucide="bell" class="w-4 h-4 inline-block mr-2"></i>Notifications</a> -->
           </li>
           <li>
-            <form method="POST" action="/logout" class="w-full flex">
-              <button type="submit" class="flex flex-1 items-center gap-2 bg-error/50 border border-error rounded-md px-2 p-1 cursor-pointer" role="menuitem">
+            <form method="POST" action="/logout" class="w-full flex bg-error/50 border border-error rounded-md px-2 p-1 cursor-pointer hover:bg-error/40">
+              <button type="submit" class="flex flex-1 items-center gap-2 cursor-pointer" role="menuitem">
                 <i data-lucide="log-out" class="w-4 h-4 inline-block mr-2"></i>Logout
               </button>
             </form>

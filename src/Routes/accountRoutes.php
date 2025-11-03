@@ -53,11 +53,11 @@ $accountRouter->patch('/accounts/:id([0-9]+)', 'AccountController@updateById');
  *  @route  /accounts/bulk-update/status
  *  @desc   Bulk update accounts by ID
  */
-$accountRouter->patch('/accounts/bulk-update/status', 'accountController@updateStatusBulk');
+$accountRouter->patch('/accounts/bulk-update/status', 'AccountController@updateStatusBulk');
 
 /** 
  *  @method DELETE
  *  @route  /accounts/bulk-delete
  *  @desc   Bulk delete accounts by ID
  */
-$accountRouter->delete('/accounts/bulk-delete', 'accountController@deleteBulk');
+$accountRouter->delete('/accounts/bulk-delete', 'AccountController@deleteBulk');

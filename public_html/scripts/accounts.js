@@ -557,7 +557,7 @@ document.addEventListener('DOMContentLoaded', () => {
           payload.sold_date = null;
         }
       }
-
+      // console.log(payload);
       const response = await fetch('/accounts/bulk-update/status', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },

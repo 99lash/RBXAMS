@@ -106,8 +106,7 @@
 #sidebar.collapsed .sidebar-text {
   display: none;
 }
-
-.alert-success-20 {
+/* .alert-success-20 {
   background-color: hsl(var(--su) / 20) !important;
 }
 .alert-warning-20 {
@@ -118,4 +117,4 @@
 }
 .alert-info-20 {
   background-color: hsl(var(--in) / 20) !important;
-}
+} */

@@ -452,7 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sortableHeaders = document.querySelectorAll('th [data-lucide="arrow-down-up"]');
   sortableHeaders.forEach(headerIcon => {
     const th = headerIcon.closest('th');
-    const sortBy = th.textContent.trim().toLowerCase().replace(/ /g, '_'); // Convert 'Name ' to 'name'
+    const sortBy = th.dataset.sort;
     th.style.cursor = 'pointer'; // Add pointer cursor to indicate sortable
     th.addEventListener('click', () => {
       if (currentSortBy === sortBy) {

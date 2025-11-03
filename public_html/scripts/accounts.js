@@ -56,7 +56,7 @@ const showToast = (message, type = 'success') => {
   }
 
   const alertDiv = document.createElement('div');
-  alertDiv.classList.add('alert', `alert-${type}`, `alert-${type}-20`);
+  alertDiv.classList.add('alert', `alert-${type}`);
   alertDiv.innerHTML = `<span>${message}</span>`;
   toastContainer.appendChild(alertDiv);
 

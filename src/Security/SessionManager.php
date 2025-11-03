@@ -6,9 +6,10 @@ class SessionManager
 {
   public static function start()
   {
-    // 30 days cookie lifetime to prevent logout on browser close
-    $cookieLifetime = 2592000; 
+    // 6 months cookie lifetime to prevent logout on browser close
+    $cookieLifetime = 15552000; 
     ini_set('session.cookie_lifetime', $cookieLifetime);
+    ini_set('session.gc_maxlifetime', $cookieLifetime); // Also update server-side lifetime
     ini_set('session.cookie_httponly', 1);
     ini_set('session.use_only_cookies', 1);
     ini_set('session.cookie_secure', isset($_SERVER['HTTPS']));
@@ -18,7 +19,7 @@ class SessionManager
       session_start();
     }
 
-    $timeout = $_ENV['TIMEOUT_DURATION'] ?? 10;
+    $timeout = $_ENV['TIMEOUT_DURATION'] ?? 15552000; // 6 months
     // echo $timeout;
     if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > intval($timeout))) {
       self::destroy();

@@ -60,34 +60,34 @@
             <!-- Pending Accounts Header -->
             <tr id="pending-header" class="account-header">
               <th><input type="checkbox" class="checkbox checkbox-sm" id="select-all-accounts" /></th>
-              <th>Name <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Status <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Robux (R$)<i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Cost (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Cost Rate (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Rate Sold ($) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Dollar-Peso Rate<i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Price (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Profit (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Date Added <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Unpend Date <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Sold Date <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="name">Name <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="status">Status <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="robux">Robux (R$)<i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="cost_php">Cost (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="cost_rate">Cost Rate (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="sold_rate_usd">Rate Sold ($) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="usd_to_php_rate_on_sale">Dollar-Peso Rate<i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="price">Price (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="profit">Profit (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="date_added">Date Added <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="unpend_date">Unpend Date <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="sold_date">Sold Date <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Actions</th>
             </tr>
             <!-- Fastflip Accounts Header -->
             <tr id="fastflip-header" class="account-header hidden">
               <th><input type="checkbox" class="checkbox checkbox-sm" id="select-all-accounts-fastflip" /></th>
-              <th>Name <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Status <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Robux (R$) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Cost (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Cost Rate (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Rate Sold ($) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Dollar-Peso Rate <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Price (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Profit (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Date Added <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
-              <th>Sold Date <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="name">Name <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="status">Status <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="robux">Robux (R$) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="cost_php">Cost (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="cost_rate">Cost Rate (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="sold_rate_usd">Rate Sold ($) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="usd_to_php_rate_on_sale">Dollar-Peso Rate <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="price">Price (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="profit">Profit (₱) <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="date_added">Date Added <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
+              <th data-sort="sold_date">Sold Date <i data-lucide="arrow-down-up" class="w-3 h-3 inline"></i></th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -117,7 +117,10 @@
             placeholder="<?= "Cookie1\nCookie2\nCookie3\n..." ?>"></textarea>
         </div>
         <div class="modal-action">
-          <button type="submit" class="btn btn-primary">Add Account(s)</button>
+          <button type="submit" id="add-account-btn" class="btn btn-primary">
+            <span class="loading loading-spinner hidden"></span>
+            <span class="btn-text">Add Account(s)</span>
+          </button>
           <button type="button" class="btn" onclick="add_account_modal.close()">Cancel</button>
         </div>
       </form>

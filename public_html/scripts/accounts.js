@@ -56,7 +56,7 @@ const showToast = (message, type = 'success') => {
   }
 
   const alertDiv = document.createElement('div');
-  alertDiv.classList.add('alert', `alert-${type}`);
+  alertDiv.classList.add('alert', `alert-${type}`, `alert-${type}-20`);
   alertDiv.innerHTML = `<span>${message}</span>`;
   toastContainer.appendChild(alertDiv);
 
@@ -452,7 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const sortableHeaders = document.querySelectorAll('th [data-lucide="arrow-down-up"]');
   sortableHeaders.forEach(headerIcon => {
     const th = headerIcon.closest('th');
-    const sortBy = th.textContent.trim().toLowerCase().replace(/ /g, '_'); // Convert 'Name ' to 'name'
+    const sortBy = th.dataset.sort;
     th.style.cursor = 'pointer'; // Add pointer cursor to indicate sortable
     th.addEventListener('click', () => {
       if (currentSortBy === sortBy) {
@@ -618,6 +618,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   addAccountForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    const addAccountBtn = document.getElementById('add-account-btn');
+    const addAccountSpinner = addAccountBtn.querySelector('.loading-spinner');
+    const addAccountBtnText = addAccountBtn.querySelector('.btn-text');
+
+    // Show loading
+    addAccountBtn.disabled = true;
+    addAccountSpinner.classList.remove('hidden');
+    addAccountBtnText.textContent = 'Adding...';
+
     const formData = new FormData(addAccountForm);
     try {
       const response = await fetch('/accounts', {
@@ -644,6 +653,11 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (error) {
       console.error('Error adding accounts:', error);
       showToast('An error occurred while adding accounts.', 'error');
+    } finally {
+      // Hide loading
+      addAccountBtn.disabled = false;
+      addAccountSpinner.classList.add('hidden');
+      addAccountBtnText.textContent = 'Add Account(s)';
     }
   });
 

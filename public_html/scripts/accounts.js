@@ -48,6 +48,21 @@ const updateTextColor = (element, value) => {
   }
 };
 
+const getStatusColorClass = (status) => {
+  switch (status.toLowerCase()) {
+    case 'pending':
+      return 'select-warning';
+    case 'unpend':
+      return 'select-info';
+    case 'sold':
+      return 'select-success';
+    case 'retrieved':
+      return 'select-error';
+    default:
+      return '';
+  }
+};
+
 const showToast = (message, type = 'success') => {
   const toastContainer = document.querySelector('.toast-container') || document.createElement('div');
   if (!toastContainer.classList.contains('toast-container')) {
@@ -219,6 +234,7 @@ const renderAccounts = (accounts) => {
     row.dataset.accountId = account.id;
 
     const status = account.status.toLowerCase();
+    const statusColorClass = getStatusColorClass(status);
     let usdToPhpRate;
     if (status === 'sold' || status === 'retrieved') {
       usdToPhpRate = account.usd_to_php_rate_on_sale ?? currentUsdToPhpRate;
@@ -234,7 +250,7 @@ const renderAccounts = (accounts) => {
         <td><input type="checkbox" class="checkbox checkbox-sm account-checkbox" data-id="${account.id}"/></td>
         <td>${account.name}</td>
         <td class="min-w-[130px]">
-          <select class="select select-bordered select-xs editable-field w-full" data-field="status" data-id="${account.id}">
+          <select class="select select-bordered select-xs editable-field w-full ${statusColorClass}" data-field="status" data-id="${account.id}">
             <option value="Pending" ${account.status === 'pending' ? 'selected' : ''}>Pending</option>
             <option value="Sold" ${account.status === 'sold' ? 'selected' : ''}>Sold</option>
             <option value="Unpend" ${account.status === 'unpend' ? 'selected' : ''}>Unpend</option>
@@ -263,7 +279,7 @@ const renderAccounts = (accounts) => {
         <td><input type="checkbox" class="checkbox checkbox-sm account-checkbox" data-id="${account.id}"/></td>
         <td>${account.name}</td>
         <td class="min-w-[130px]">
-          <select class="select select-bordered select-xs editable-field w-full" data-field="status" data-id="${account.id}">
+          <select class="select select-bordered select-xs editable-field w-full ${statusColorClass}" data-field="status" data-id="${account.id}">
             <option value="Sold" ${account.status === 'sold' ? 'selected' : ''}>Sold</option>
             <option value="Unpend" ${account.status === 'unpend' ? 'selected' : ''}>Unpend</option>
             <option value="Retrieved" ${account.status === 'retrieved' ? 'selected' : ''}>Retrieved</option>

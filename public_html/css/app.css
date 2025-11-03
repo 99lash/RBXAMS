@@ -106,3 +106,16 @@
 #sidebar.collapsed .sidebar-text {
   display: none;
 }
+
+.alert-success-20 {
+  background-color: hsl(var(--su) / 20) !important;
+}
+.alert-warning-20 {
+  background-color: hsl(var(--wa) / 20) !important;
+}
+.alert-error-20 {
+  background-color: hsl(var(--er) / 20) !important;
+}
+.alert-info-20 {
+  background-color: hsl(var(--in) / 20) !important;
+}

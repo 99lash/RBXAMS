@@ -117,7 +117,10 @@
             placeholder="<?= "Cookie1\nCookie2\nCookie3\n..." ?>"></textarea>
         </div>
         <div class="modal-action">
-          <button type="submit" class="btn btn-primary">Add Account(s)</button>
+          <button type="submit" id="add-account-btn" class="btn btn-primary">
+            <span class="loading loading-spinner hidden"></span>
+            <span class="btn-text">Add Account(s)</span>
+          </button>
           <button type="button" class="btn" onclick="add_account_modal.close()">Cancel</button>
         </div>
       </form>

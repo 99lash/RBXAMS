@@ -41,8 +41,14 @@ use App\Utils\Flash;
       </div>
       <div class="form-control">
         <label class="label"><span class="label-text">Password</span></label>
-        <input type="password" name="password" class="input input-bordered w-full" placeholder="Enter your password"
-          required>
+        <div class="relative">
+          <input type="password" name="password" id="password" class="input input-bordered w-full pr-10"
+            placeholder="Enter your password" required>
+          <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 px-3 flex items-center"
+            style="z-index: 10;">
+            <i id="toggleIcon" data-lucide="eye" class="w-5 h-5 text-gray-400"></i>
+          </button>
+        </div>
         <label class="label">
           <a href="/forgot-password" class="label-text-alt link link-hover">Forgot password?</a>
         </label>
@@ -52,3 +58,8 @@ use App\Utils\Flash;
     </p>
   </div>
 </div>
+<script src="https://unpkg.com/lucide@latest"></script>
+<script>
+  lucide.createIcons();
+</script>
+<script src="/scripts/auth.js"></script>

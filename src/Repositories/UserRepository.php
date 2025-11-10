@@ -96,10 +96,10 @@ class UserRepository
     return null;
   }
 
-  public function updatePassword(int $userId, string $hashedPassword): bool
+  public function updatePassword(string $userId, string $hashedPassword): bool
   {
     $stmt = $this->mysqli->prepare("UPDATE users SET password = ? WHERE id = ?");
-    $stmt->bind_param("si", $hashedPassword, $userId);
+    $stmt->bind_param("ss", $hashedPassword, $userId);
     return $stmt->execute();
   }
 

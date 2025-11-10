@@ -118,7 +118,7 @@ class AuthService
 
     // Update user password
     $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
-    $this->userRepository->updatePassword((int)$user->getId(), $hashedPassword);
+    $this->userRepository->updatePassword($user->getId(), $hashedPassword);
 
     // Delete the used token
     $stmt = $this->db->prepare("DELETE FROM password_resets WHERE token = ?");

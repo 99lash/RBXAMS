@@ -184,6 +184,21 @@
     </form>
   </dialog>
 
+  <!-- Confirmation Modal -->
+  <dialog id="confirmation_modal" class="modal">
+    <div class="modal-box">
+      <h3 class="font-bold text-lg">Confirm Action</h3>
+      <p id="confirmation_message" class="py-4"></p>
+      <div class="modal-action">
+        <button id="confirm_btn" class="btn btn-primary">Confirm</button>
+        <button id="cancel_btn" class="btn">Cancel</button>
+      </div>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
+  </dialog>
+
 </div>
 
 <script type="module" src="/scripts/accounts.js"></script>

@@ -80,6 +80,19 @@ const showToast = (message, type = 'success') => {
   }, 3000);
 };
 
+// --- Confirmation Modal ---
+let onConfirmAction = null;
+
+const showConfirmationModal = (message, onConfirm) => {
+  const modal = document.getElementById('confirmation_modal');
+  const modalMessage = document.getElementById('confirmation_message');
+  if (!modal || !modalMessage) return;
+
+  modalMessage.textContent = message;
+  onConfirmAction = onConfirm;
+  modal.showModal();
+};
+
 // --- Pagination Function ---
 const renderPagination = (pagination) => {
   const { total_items, per_page, current_page, last_page, from, to } = pagination;
@@ -464,6 +477,34 @@ const renderBulkUpdateDropdown = () => {
 
 
 document.addEventListener('DOMContentLoaded', () => {
+  // --- Confirmation Modal Listeners ---
+  const confirmBtn = document.getElementById('confirm_btn');
+  const cancelBtn = document.getElementById('cancel_btn');
+  const confirmationModal = document.getElementById('confirmation_modal');
+
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', () => {
+      if (typeof onConfirmAction === 'function') {
+        onConfirmAction();
+      }
+      onConfirmAction = null;
+      if (confirmationModal) confirmationModal.close();
+    });
+  }
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => {
+      onConfirmAction = null;
+      if (confirmationModal) confirmationModal.close();
+    });
+  }
+  
+  if (confirmationModal) {
+      confirmationModal.addEventListener('close', () => {
+          onConfirmAction = null;
+      });
+  }
+
   // --- Event Listeners ---
   const sortableHeaders = document.querySelectorAll('th [data-lucide="arrow-down-up"]');
   sortableHeaders.forEach(headerIcon => {
@@ -558,38 +599,36 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    if (!confirm(`Are you sure you want to set ${selectedIds.length} account(s) to "${status}"?`)) {
-      return;
-    }
+    showConfirmationModal(`Are you sure you want to set ${selectedIds.length} account(s) to "${status}"?`, async () => {
+      try {
+        const payload = { ids: selectedIds, status: status };
 
-    try {
-      const payload = { ids: selectedIds, status: status };
+        if (status === 'unpend' || status === 'retrieved') {
+          const accountsToUpdate = allAccounts.filter(acc => selectedIds.includes(String(acc.id)));
+          const allSelectedAreSold = accountsToUpdate.length > 0 && accountsToUpdate.every(acc => acc.status.toLowerCase() === 'sold');
 
-      if (status === 'unpend' || status === 'retrieved') {
-        const accountsToUpdate = allAccounts.filter(acc => selectedIds.includes(String(acc.id)));
-        const allSelectedAreSold = accountsToUpdate.length > 0 && accountsToUpdate.every(acc => acc.status.toLowerCase() === 'sold');
-
-        if (allSelectedAreSold) {
-          payload.sold_date = null;
+          if (allSelectedAreSold) {
+            payload.sold_date = null;
+          }
         }
+        // console.log(payload);
+        const response = await fetch('/accounts/bulk-update/status', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (result.success) {
+          showToast(`Successfully updated ${result.updated.length} account(s).`);
+          fetchAccounts();
+        } else {
+          showToast(`Failed to update accounts: ${result.detail || 'Unknown error'}`, 'error');
+        }
+      } catch (error) {
+        console.error('Error during bulk status update:', error);
+        showToast('An error occurred during bulk update.', 'error');
       }
-      // console.log(payload);
-      const response = await fetch('/accounts/bulk-update/status', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const result = await response.json();
-      if (result.success) {
-        showToast(`Successfully updated ${result.updated.length} account(s).`);
-        fetchAccounts();
-      } else {
-        showToast(`Failed to update accounts: ${result.detail || 'Unknown error'}`, 'error');
-      }
-    } catch (error) {
-      console.error('Error during bulk status update:', error);
-      showToast('An error occurred during bulk update.', 'error');
-    }
+    });
   });
 
   bulkDeleteBtn.addEventListener('click', async () => {
@@ -609,27 +648,25 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    if (!confirm(`Are you sure you want to delete ${selectedIds.length} account(s)?`)) {
-      return;
-    }
-
-    try {
-      const response = await fetch('/accounts/bulk-delete', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: selectedIds })
-      });
-      const result = await response.json();
-      if (result.success) {
-        showToast(`Successfully deleted ${result.deleted.length} account(s).`);
-        fetchAccounts(); // Re-fetch and render accounts
-      } else {
-        showToast(`Failed to delete accounts: ${result.detail || 'Unknown error'}`, 'error');
+    showConfirmationModal(`Are you sure you want to delete ${selectedIds.length} account(s)?`, async () => {
+      try {
+        const response = await fetch('/accounts/bulk-delete', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids: selectedIds })
+        });
+        const result = await response.json();
+        if (result.success) {
+          showToast(`Successfully deleted ${result.deleted.length} account(s).`);
+          fetchAccounts(); // Re-fetch and render accounts
+        } else {
+          showToast(`Failed to delete accounts: ${result.detail || 'Unknown error'}`, 'error');
+        }
+      } catch (error) {
+        console.error('Error during bulk delete:', error);
+        showToast('An error occurred during bulk delete.', 'error');
       }
-    } catch (error) {
-      console.error('Error during bulk delete:', error);
-      showToast('An error occurred during bulk delete.', 'error');
-    }
+    });
   });
 
   addAccountForm.addEventListener('submit', async (e) => {
@@ -681,26 +718,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // Delete button
     if (e.target.closest('.delete-btn')) {
       const id = e.target.closest('.delete-btn').dataset.id;
-      if (!confirm(`Are you sure you want to delete account ${id}?`)) {
-        return;
-      }
-      try {
-        const response = await fetch(`/accounts/bulk-delete`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids: [id] })
-        });
-        const result = await response.json();
-        if (result.success) {
-          showToast(`Account ${id} deleted successfully.`);
-          fetchAccounts();
-        } else {
-          showToast(`Failed to delete account ${id}: ${result.detail || 'Unknown error'}`, 'error');
+      showConfirmationModal(`Are you sure you want to delete account ${id}?`, async () => {
+        try {
+          const response = await fetch(`/accounts/bulk-delete`, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids: [id] })
+          });
+          const result = await response.json();
+          if (result.success) {
+            showToast(`Account ${id} deleted successfully.`);
+            fetchAccounts();
+          } else {
+            showToast(`Failed to delete account ${id}: ${result.detail || 'Unknown error'}`, 'error');
+          }
+        } catch (error) {
+          console.error('Error deleting account:', error);
+          showToast('An error occurred while deleting the account.', 'error');
         }
-      } catch (error) {
-        console.error('Error deleting account:', error);
-        showToast('An error occurred while deleting the account.', 'error');
-      }
+      });
     }
   });
 

@@ -264,13 +264,7 @@ const renderAccounts = (accounts) => {
         <td>${account.name}</td>
         <td class="min-w-[130px]">
           <select class="select select-bordered select-xs editable-field w-full ${statusColorClass}" data-field="status" data-id="${account.id}">
-            <option value="Pending" ${account.status === 'pending' ? 'selected' : ''}>Pending</option>
-            <option value="Sold" ${account.status === 'sold' ? 'selected' : ''}>Sold</option>
-            <option value="Unpend" ${account.status === 'unpend' ? 'selected' : ''}>Unpend</option>
-            <option value="Retrieved" ${account.status === 'retrieved' ? 'selected' : ''}>Retrieved</option>
-          </select>
-        </td>
-        <td><input type="number" class="input input-bordered input-xs w-24 editable-field" data-field="robux" data-id="${account.id}" value="${account.robux}" ${disabledAttr} /></td>
+        <td>${formatNumber(account.robux)}</td>
         <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="cost_php" data-id="${account.id}" value="${account.cost_php ?? ''}" ${disabledAttr} /></td>
         <td>${costRate > 0 ? formatCurrency(costRate) : 'N/A'}</td>
         <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="sold_rate_usd" data-id="${account.id}" value="${account.sold_rate_usd ?? ''}" placeholder="USD" ${disabledAttr} /></td>
@@ -298,7 +292,7 @@ const renderAccounts = (accounts) => {
             <option value="Retrieved" ${account.status === 'retrieved' ? 'selected' : ''}>Retrieved</option>
           </select>
         </td>
-        <td><input type="number" class="input input-bordered input-xs w-24 editable-field" data-field="robux" data-id="${account.id}" value="${account.robux}" ${disabledAttr} /></td>
+        <td>${formatNumber(account.robux)}</td>
         <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="cost_php" data-id="${account.id}" value="${account.cost_php ?? ''}" ${disabledAttr} /></td>
         <td>${costRate > 0 ? formatCurrency(costRate) : 'N/A'}</td>
         <td><input type="number" step="0.01" class="input input-bordered input-xs w-24 editable-field" data-field="sold_rate_usd" data-id="${account.id}" value="${account.sold_rate_usd ?? ''}" placeholder="USD" ${disabledAttr} /></td>
@@ -695,7 +689,7 @@ document.addEventListener('DOMContentLoaded', () => {
           result.duplicate.forEach(dup => showToast(`Duplicate: ${dup.account.name} (${dup.message})`, 'warning'));
         }
         if (result.failed.length > 0) {
-          result.failed.forEach(fail => showToast(`Failed to add: ${fail.cookie} (${fail.message})`, 'error'));
+          result.failed.forEach(fail => showToast(`Failed to add: ${fail?.cookie ?? fail?.displayName ?? fail.name} (${fail.message})`, 'error'));
         }
         add_account_modal.close();
         addAccountForm.reset();

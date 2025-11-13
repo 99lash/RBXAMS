@@ -104,6 +104,15 @@ class AccountController
       $accountRobux = RobloxService::getAccountRobux($cookie);
       $accountTransactions = RobloxService::getAccountTransaction($accountDetails['id'], $cookie);
 
+      // Prevent adding accounts with 0 Robux and 0 Pending Robux
+      if (($accountRobux['robux'] ?? 0) <= 0 && ($accountTransactions['pendingRobuxTotal'] ?? 0) <= 0 && ($accountTransactions['incomingRobuxTotal'] ?? 0) <= 0) {
+        $response["failed"][] = [
+          "cookie" => $accountDetails['displayName'],
+          "message" => "Account has 0 Robux and 0 Pending Robux. Cannot add."
+        ];
+        continue;
+      }
+
       $accountType = ($accountTransactions['pendingRobuxTotal'] > 0
         || $accountTransactions['incomingRobuxTotal'] > 0)
         ? AccountType::PENDING

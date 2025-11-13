@@ -77,7 +77,7 @@ The Asset Monitoring System is a specialized tool designed to track revenue and 
 
 ### Live Demo
 
-🔗 [https://rbxams.bscs3a.com](https://temporary-link.com)
+🔗 [https://rbxams.bscs3a.com](https://rbxams.bscs3a.com)
 
 ---
 

@@ -146,7 +146,7 @@
           <label class="label">
             <span class="label-text">Robux</span>
           </label>
-          <input type="number" id="edit-account-robux" name="robux" class="input input-bordered w-full" />
+          <input type="number" id="edit-account-robux" name="robux" class="input input-bordered w-full" disabled />
         </div>
         <div class="form-control w-full mt-4">
           <label class="label">
